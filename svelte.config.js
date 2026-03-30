@@ -15,7 +15,16 @@ const config = {
 		}
 	},
 	kit: {
-		adapter: adapter()
+		adapter: adapter({
+			pages: 'dist',
+			assets: 'dist',
+			fallback: '404.html',
+			precompress: true,
+			strict: true
+		}),
+		paths: {
+			base: 'malghnei.github.io/'
+		}
 	},
 	preprocess: [mdsvex({ extensions: ['.svx', '.md'] })],
 	extensions: ['.svelte', '.svx', '.md']
