@@ -23,7 +23,7 @@ const config = {
 			strict: true
 		}),
 		paths: {
-			base: 'malghnei.github.io/'
+			base: ''
 		}
 	},
 	preprocess: [mdsvex({ extensions: ['.svx', '.md'] })],
