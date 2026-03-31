@@ -1,26 +1,42 @@
 import type { ExperienceEntry } from '$lib/types';
 
 export const siteContent = {
-	
-
 	name: 'Malik Alghneimin',
 	role: 'Aspiring Software Engineer',
 	heroCommand: 'whoami',
 	heroDescription:
 		'I build robust, developer-friendly products with a focus on systems thinking, product quality, and maintainable frontend architecture.',
 	aboutNarrative: [
-		'I am a software engineer who enjoys building interfaces and systems that stay reliable under real usage. I focus on clarity, predictability, and maintainability over flashy complexity.',
-		'My work spans frontend architecture, interactive tooling, and full-stack product delivery. I am especially motivated by products that demand strong UX and technical depth at the same time.',
-		'Outside formal work, I explore open-source projects and learning tracks in distributed systems, modern web architecture, and quantitative-oriented software engineering.'
+		'I am a software engineer who enjoys building ideas and systems that help solve problems and stay reliable under real usage. I focus on clarity, predictability, and maintainability over flashy complexity.',
+		'My work spans embedded systems, cybersecurity, and full-stack product delivery. I am especially motivated by products that demand strong UX and technical depth at the same time.',
+		'Outside formal work, I explore contribuitable open-source projects and build projects that help me learn and grow.'
 	],
-	featuredProjectSlugs: ['sentiment-analysis', 'qiyami', '2d-physics-simulation'],
-	misc: {
-		upTo: ['Vibe Coding random projects :robot:', 'Studying for final exams :sob:', 'Doomscrolling :iphone:'],
-		contactEmail: 'malikalghneimin@gmail.com',
-		quickLinks: [
+	featuredProjectSlugs: ['qiyami', 'sentiment-analysis', '2d-physics-simulation'],
+	setup: {
+		items: [
+			{ label: 'IDE', value: 'Cursor' },
+			{ label: 'Operating System', value: 'Arch Linux (KDE Plasma)' },
+			{ label: 'Terminal', value: 'Kitty + Bash' },
+			{ label: 'Editor Theme', value: 'Nord' },
+			{ label: 'LLM of Choice', value: 'Gemini 3.1 Pro' },
+			{ label: 'Browser', value: 'Zen Browser' }
+		]
+	},
+	links: {
+		items: [
 			{ label: 'GitHub', href: 'https://github.com/Malghnei' },
-			{ label: 'LinkedIn', href: 'https://linkedin.com/malik-alghneimin' },
+			{ label: 'LinkedIn', href: 'https://linkedin.com/in/malik-alghneimin' },
+			{ label: 'X / Twitter', href: 'https://x.com/malghnei' },
+			{ label: 'Instagram', href: 'https://instagram.com/malghnei' },
 			{ label: 'Resume', href: '#' }
+		],
+		contactEmail: 'malikalghneimin@gmail.com'
+	},
+	misc: {
+		upTo: [
+			'Vibe Coding random projects :robot:',
+			'Studying for final exams :sob:',
+			'Doomscrolling :iphone:'
 		]
 	}
 };

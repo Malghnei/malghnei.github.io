@@ -40,8 +40,8 @@ const experienceFile = () =>
 const contactFile = () =>
 	[
 		'# contact.md',
-		`email: ${siteContent.misc.contactEmail}`,
-		...siteContent.misc.quickLinks.map((link) => `${link.label.toLowerCase()}: ${link.href}`)
+		`email: ${siteContent.links.contactEmail}`,
+		...siteContent.links.items.map((link) => `${link.label.toLowerCase()}: ${link.href}`)
 	].join('\n');
 
 const isProjectFilename = (value: string) => value.endsWith('.md') && value.length > 3;

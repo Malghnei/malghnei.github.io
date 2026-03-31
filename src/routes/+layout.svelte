@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.ico';
 
 	let { children } = $props();
 	const navLinks = [
-		{ href: '/', label: 'home' },
-		{ href: '/about', label: 'about' },
-		{ href: '/projects', label: 'projects' },
-		{ href: '/other', label: 'other' }
+		{ href: '/', label: 'home/' },
+		{ href: '/about', label: 'about/' },
+		{ href: '/projects', label: 'projects/' },
+		{ href: '/other', label: 'other/' }
 	];
 
 	const isTerminalRoute = $derived(page.url.pathname.startsWith('/terminal'));

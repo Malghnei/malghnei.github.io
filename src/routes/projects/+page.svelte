@@ -59,7 +59,7 @@
 
 <section class="space-y-4">
 	<div class="terminal-surface p-4">
-		<h1 class="terminal-title text-2xl">projects</h1>
+		<h1 class="terminal-title text-2xl">~/projects/</h1>
 		<p class="mt-2 text-sm">Search and filter by stack to quickly inspect project depth.</p>
 	</div>
 

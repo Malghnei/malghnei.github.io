@@ -33,9 +33,9 @@
 		</div>
 	</section>
 
-	<section class="space-y-3">
-		<h2 class="terminal-title text-lg">~/projects.md</h2>
-		<div class="grid gap-4 md:grid-cols-3">
+	<section class="terminal-surface p-4">
+		<h2 class="terminal-title text-lg">~/featured-projects.md</h2>
+		<div class="mt-3 grid gap-4 md:grid-cols-3">
 			{#each data.featuredProjects as project}
 				<a href={`/projects/${project.slug}`} class="terminal-surface block p-4 hover:border-[var(--nord-8)]">
 					<p class="text-xs text-[var(--nord-9)]">{project.period}</p>
@@ -60,25 +60,47 @@
 	</section>
 
 	<section class="terminal-surface p-4">
-		<h2 class="terminal-title text-lg">~/misc.md</h2>
-		<div class="mt-3 grid gap-4 md:grid-cols-2">
-			<div>
-				<p class="text-sm text-[var(--nord-8)]"> Currently:</p>
-				<ul class="mt-2 list-inside list-disc space-y-1 text-sm">
-					{#each data.siteContent.misc.upTo as book}
-						<li>{emoji.emojify(book)}</li>
-					{/each}
-				</ul>
+		<h2 class="terminal-title text-lg">~/setup.md</h2>
+		{#if data.siteContent.setup.items.length === 0}
+			<p class="mt-3 text-sm">Setup details coming soon.</p>
+		{:else}
+			<div class="mt-3 space-y-2 text-sm">
+				{#each data.siteContent.setup.items as item}
+					<p class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
+						<span class="text-[var(--nord-8)]">{item.label}:</span>
+						<span>{item.value}</span>
+					</p>
+				{/each}
 			</div>
-			<div>
-				<p class="text-sm text-[var(--nord-8)]">Quick Links:</p>
-				<ul class="mt-2 space-y-2 text-sm">
-					{#each data.siteContent.misc.quickLinks as link}
+		{/if}
+	</section>
+
+	<div class="grid gap-4 md:grid-cols-2">
+		<section class="terminal-surface p-4">
+		<h2 class="terminal-title text-lg">~/misc.md</h2>
+		<p class="mt-3 text-sm text-[var(--nord-8)]">Currently:</p>
+		<ul class="mt-2 list-inside list-disc space-y-1 text-sm">
+			{#each data.siteContent.misc.upTo as book}
+				<li>{emoji.emojify(book)}</li>
+			{/each}
+		</ul>
+		</section>
+
+		<section class="terminal-surface p-4">
+			<h2 class="terminal-title text-lg">~/links.md</h2>
+			{#if data.siteContent.links.items.length === 0}
+				<p class="mt-3 text-sm">No links available yet.</p>
+			{:else}
+				<ul class="mt-3 space-y-2 text-sm">
+					{#each data.siteContent.links.items as link}
 						<li><a href={link.href} target="_blank" rel="noreferrer">{link.label}</a></li>
 					{/each}
-					<li>Contact: <a href={`mailto:${data.siteContent.misc.contactEmail}`}>{data.siteContent.misc.contactEmail}</a></li>
 				</ul>
-			</div>
+			{/if}
+			<p class="mt-3 text-sm">
+				Contact:
+				<a href={`mailto:${data.siteContent.links.contactEmail}`}>{data.siteContent.links.contactEmail}</a>
+			</p>
+		</section>
 		</div>
-	</section>
 </div>
