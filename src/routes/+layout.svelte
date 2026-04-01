@@ -14,7 +14,10 @@
 	const isTerminalRoute = $derived(page.url.pathname.startsWith('/terminal'));
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head><link rel="icon" href={favicon} />
+	<title>Malik's Portfolio</title>
+	<meta name="description" content="Welcome to my Web Portfolio" />
+</svelte:head>
 
 {#if isTerminalRoute}
 	{@render children()}
