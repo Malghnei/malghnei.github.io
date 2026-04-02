@@ -55,3 +55,10 @@ a:hover {
 .terminal-title {
 	color: var(--nord-8);
 }
+
+.site-header {
+	background-color: var(--nord-1);
+	box-shadow:
+		0 1px 0 color-mix(in srgb, var(--nord-0) 80%, transparent),
+		0 4px 14px rgba(0, 0, 0, 0.12);
+}

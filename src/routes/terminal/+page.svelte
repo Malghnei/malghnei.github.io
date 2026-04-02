@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { siteContent } from '$lib/data/site';
 	import { executeTerminalCommand } from '$lib/terminal/commands';
 
@@ -52,6 +52,10 @@
 		command = '';
 	};
 
+	const focusInput = () => {
+		queueMicrotask(() => inputEl?.focus());
+	};
+
 	const handleHistory = (event: KeyboardEvent) => {
 		if (event.key === 'ArrowUp') {
 			event.preventDefault();
@@ -67,16 +71,20 @@
 		}
 	};
 
-	onMount(() => {
+	onMount(async () => {
+		await tick();
 		inputEl?.focus();
 	});
 </script>
 
 <div class="min-h-screen bg-[var(--nord-0)] p-4">
-	<div class="mx-auto h-[calc(100vh-2rem)] max-w-6xl terminal-surface">
-		<div class="flex items-center justify-between border-b border-[var(--nord-3)] bg-[var(--nord-1)] px-4 py-2 text-xs">
+	<div
+		class="mx-auto h-[calc(100vh-2rem)] max-w-6xl cursor-text terminal-surface"
+		onclick={focusInput}
+		role="presentation"
+	>
+		<div class="flex items-center border-b border-[var(--nord-3)] bg-[var(--nord-1)] px-4 py-2 text-xs">
 			<span class="terminal-title">interactive terminal</span>
-			<a href="/" class="border border-[var(--nord-8)] px-2 py-1 text-[var(--nord-8)]">standard view</a>
 		</div>
 
 		<div class="h-[calc(100%-2.5rem)] overflow-y-auto bg-[var(--nord-0)] p-4 text-sm">
