@@ -11,7 +11,7 @@ export const siteContent = {
 		'My work spans embedded systems, cybersecurity, and full-stack product delivery. I am especially motivated by products that demand strong UX and technical depth at the same time.',
 		'Outside formal work, I explore contribuitable open-source projects and build projects that help me learn and grow.'
 	],
-	featuredProjectSlugs: ['qiyami', 'sentiment-analysis', '2d-physics-simulation'],
+	featuredProjectSlugs: ['condimental', 'sentiment-analysis', 'qiyami'],
 	setup: {
 		items: [
 			{ label: 'IDE', value: 'Cursor' },
