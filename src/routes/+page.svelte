@@ -1,8 +1,25 @@
 <script lang="ts">
 	import * as emoji from 'node-emoji';
 	import { getTagHighlightStyle } from '$lib/tags/tagStyles';
+	import { onMount } from 'svelte';
+	// @ts-ignore
+	import Typewriter from 'typewriter-effect/dist/core';
 
 	let { data } = $props();
+	let nameElement: HTMLElement;
+
+	onMount(() => {
+		if (nameElement) {
+			const typewriter = new Typewriter(nameElement, {
+				loop: false,
+				delay: 75,
+			});
+			
+			typewriter
+				.typeString(data.siteContent.name)
+				.start();
+		}
+	});
 
 	const categoryColor = (category: string) => {
 		if (category === 'work') return 'text-[var(--nord-8)]';
@@ -14,7 +31,7 @@
 <div class="space-y-8">
 	<section class="terminal-surface p-4 space-y-2">
 		<p class="terminal-title text-sm">{data.siteContent.heroCommand}</p>
-		<h1 class="mt-2 text-2xl">{data.siteContent.name}</h1>
+		<h1 class="mt-2 text-2xl" bind:this={nameElement}></h1>
 		<p class="text-[var(--nord-8)]">{data.siteContent.role}</p>
 		<p class="mt-3 text-sm leading-relaxed">{data.siteContent.heroDescription}</p>
 	</section>

@@ -28,6 +28,7 @@
 	},
 	"dependencies": {
 		"node-emoji": "^2.2.0",
-		"node-emojis": "^1.0.0"
+		"node-emojis": "^1.0.0",
+		"typewriter-effect": "^2.22.0"
 	}
 }
