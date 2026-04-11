@@ -12,7 +12,7 @@
 </script>
 
 <div class="space-y-8">
-	<section class="terminal-surface p-4">
+	<section class="terminal-surface p-4 space-y-2">
 		<p class="terminal-title text-sm">{data.siteContent.heroCommand}</p>
 		<h1 class="mt-2 text-2xl">{data.siteContent.name}</h1>
 		<p class="text-[var(--nord-8)]">{data.siteContent.role}</p>

@@ -5,11 +5,11 @@ export const siteContent = {
 	role: 'Aspiring Software Engineer',
 	heroCommand: 'whoami',
 	heroDescription:
-		'I build robust, developer-friendly products with a focus on systems thinking, product quality, and maintainable frontend architecture.',
+		'I build stuff.',
 	aboutNarrative: [
-		'I am a software engineer who enjoys building ideas and systems that help solve problems and stay reliable under real usage. I focus on clarity, predictability, and maintainability over flashy complexity.',
-		'My work spans embedded systems, cybersecurity, and full-stack product delivery. I am especially motivated by products that demand strong UX and technical depth at the same time.',
-		'Outside formal work, I explore contribuitable open-source projects and build projects that help me learn and grow.'
+		'W.',
+		'I.',
+		'P.'
 	],
 	featuredProjectSlugs: ['condimental', 'sentiment-analysis', 'qiyami'],
 	setup: {
