@@ -26,8 +26,8 @@ export const siteContent = {
 		items: [
 			{ label: 'GitHub', href: 'https://github.com/Malghnei' },
 			{ label: 'LinkedIn', href: 'https://linkedin.com/in/malik-alghneimin' },
-			{ label: 'X / Twitter', href: 'https://x.com/malghnei' },
-			{ label: 'Instagram', href: 'https://instagram.com/malghnei' },
+			{ label: 'X / Twitter', href: 'https://x.com/' },
+			{ label: 'Instagram', href: 'https://instagram.com/' },
 			{ label: 'Resume', href: '#' }
 		],
 		contactEmail: 'malikalghneimin@gmail.com'
