@@ -17,6 +17,19 @@
 	--nord-13: #ebcb8b;
 	--nord-14: #a3be8c;
 	--nord-15: #b48ead;
+
+	/* Typography Scale */
+	--font-body: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+	--font-heading: var(--font-body);
+
+	/* Major Third Scale */
+	--text-base-size: 1.0625rem; /* ~17px */
+	--text-base-lh: 1.65;
+	
+	--text-h1: 2.441rem;
+	--text-h2: 1.953rem;
+	--text-h3: 1.563rem;
+	--text-h4: 1.25rem;
 }
 
 html,
@@ -26,17 +39,24 @@ body {
 	min-height: 100%;
 	background: var(--nord-0);
 	color: var(--nord-4);
-	font-family:
-		'JetBrains Mono',
-		'Fira Code',
-		'SFMono-Regular',
-		Menlo,
-		Monaco,
-		Consolas,
-		'Liberation Mono',
-		'Courier New',
-		monospace;
+	font-family: var(--font-body);
+	font-size: var(--text-base-size);
+	line-height: var(--text-base-lh);
 }
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font-heading);
+	font-weight: 700;
+	line-height: 1.2;
+	margin-top: 0;
+	margin-bottom: 0.5em;
+	color: var(--nord-6);
+}
+
+h1 { font-size: var(--text-h1); letter-spacing: -0.02em; }
+h2 { font-size: var(--text-h2); letter-spacing: -0.01em; }
+h3 { font-size: var(--text-h3); }
+h4 { font-size: var(--text-h4); }
 
 a {
 	color: var(--nord-8);
@@ -50,6 +70,7 @@ a:hover {
 .terminal-surface {
 	border: 1px solid var(--nord-3);
 	background: var(--nord-1);
+	border-radius: 0.2em;
 }
 
 .terminal-title {
