@@ -78,7 +78,7 @@ The whole app fills one viewport. The navbar and status bar are fixed, and the b
 ### Status bar (`StatusBar.svelte`)
 - Left side: mode pill (`NORMAL` / `TERMINAL`), then the file path, then a `[terminal]` tab shown only while the terminal is minimized.
 - Right side: `utf-8 │ md │ line:col`.
-- `line:col` follows the last clicked line, or the line nearest the middle of the view when scrolling.
+- `line:col` follows the last clicked line, or the line nearest the middle of the view when scrolling. The column is always `1`, because there is no in-line cursor.
 - Flat, square, lualine-style segments.
 
 ### Visual rules
@@ -86,7 +86,7 @@ The whole app fills one viewport. The navbar and status bar are fixed, and the b
 - No shadows. No section boxes or panel backgrounds, except project cards.
 - One font size for body text and headings. Headings are told apart by color and a `#` / `##` prefix.
 - Dividers are drawn with `─`.
-- JetBrains Mono, self-hosted under `static/fonts/` (no Google Fonts request).
+- JetBrains Mono, self-hosted through the `@fontsource/jetbrains-mono` package. Its font files are bundled into the build, so there's no Google Fonts request.
 
 ### Mobile (< 640px)
 - The gutter narrows to two digits.
@@ -97,10 +97,12 @@ The whole app fills one viewport. The navbar and status bar are fixed, and the b
 ### Structure
 - `src/routes/+layout.svelte` renders `<Navbar>`, `<Buffer>{children}</Buffer>`, `<StatusBar>` and `<TerminalWindow>`, and registers the global keymap listener.
 - Shared state lives in `src/lib/editor/state.svelte.ts`, a Svelte 5 runes module, and holds:
-  - `cursorLine`, `cursorCol`
-  - `mode: 'NORMAL' | 'TERMINAL'`
-  - `terminal: { status: 'closed' | 'open' | 'minimized'; maximized: boolean; rect }`
+  - `cursorLine`
+  - `helpOpen` (which-key popup)
+  - `terminal: { status: 'closed' | 'open' | 'minimized'; maximized: boolean }`
   - terminal session lines and command history
+  - mode is derived: `TERMINAL` while the terminal is open, otherwise `NORMAL`
+  - the window rect is kept inside `TerminalWindow` and `sessionStorage`, not in shared state
 - Removed: `ViewToggleFab.svelte`, `constants/viewToggle.ts`, and the `isTerminalRoute` branch in the layout.
 
 ## 2. Pages
@@ -173,6 +175,7 @@ tags: react  svelte  python  …
 ```
 ---
 title: Condimental
+summary: A fun app that uses vision analysis…
 period: apr 2026
 role: solo · type: software
 stack: react · express.js · node.js · cloudflare workers ai
@@ -253,7 +256,7 @@ The frontmatter `featured: true` flag is the only source. `siteContent.featuredP
 
 ### Command changes (`src/lib/terminal/commands.ts`)
 - `TerminalExecutionResult` gets `navigate?: string` and `close?: boolean`. The window carries these out with `goto()` and a state change.
-- `cd home|about|projects` returns `navigate` to `/`, `/about/` or `/projects/`. `cd /` and `cd ..` go to `/`. Any other target keeps the existing error.
+- `cd home|about|projects` returns `navigate` to `/`, `/about/` or `/projects/`. The existing directories map to where their content now lives: `experience` → `/about/`, `contact` → `/`. `cd /`, `cd ~` and `cd ..` go to `/`. Targets are case-insensitive and ignore a leading `~/` or `/` and a trailing `/`. Any other target keeps the existing error.
 - `open <slug>` (new) returns `navigate: /projects/<slug>/` if the slug exists, otherwise `open: <slug>: No such project`.
 - `exit` (new) returns `close: true`.
 - `ls` lists project files with role and domain, e.g. `condimental.md  solo · software`.
@@ -268,7 +271,7 @@ The frontmatter `featured: true` flag is the only source. `siteContent.featuredP
 ### Legacy `/terminal`
 `src/routes/terminal/+page.svelte` is replaced with a prerendered stub:
 - on mount it opens the terminal and calls `goto('/', { replaceState: true })`
-- its `<head>` has `<meta http-equiv="refresh" content="0; url=/">` as a no-JS fallback
+- its `<head>` has `<noscript><meta http-equiv="refresh" content="0; url=/"></noscript>` as a no-JS fallback. It's inside `noscript` because a bare refresh would also fire when JS is on, reloading the page and closing the terminal that just opened.
 
 `src/routes/terminal/+page.ts` is deleted, because projects now come from the layout load.
 
@@ -285,7 +288,7 @@ The frontmatter `featured: true` flag is the only source. `siteContent.featuredP
 | `Ctrl+/` | toggle terminal |
 | `?` | toggle the which-key popup (`WhichKey.svelte`); `Esc` closes it |
 
-- A pure `resolve(pending, event)` returns `{ action } | { pending } | { passthrough }`. Sequences time out after 800ms.
+- A pure `resolveKey(pending, input)` returns `{ kind: 'action' } | { kind: 'pending' } | { kind: 'passthrough' }`, and `resolveTimeout(pending)` returns the action to run when a sequence times out. Sequences time out after 800ms.
 - `Space` with no follow-up key within 800ms runs the native page-down scroll.
 - Shortcuts are ignored when `event.target` is an `input`, a `textarea`, a contenteditable element, or inside the terminal. `Ctrl+/` is the exception.
 - Key presses with Alt or Meta, or with Ctrl other than `Ctrl+/`, pass through untouched.
@@ -316,7 +319,7 @@ The frontmatter `featured: true` flag is the only source. `siteContent.featuredP
 |---|---|
 | `filterProjects` | query matches title, summary and stack; tag AND; role filter; domain filter; combined filters; no matches |
 | `clampRect` | minimum size; clamped at all 4 edges; viewport smaller than the minimum |
-| `keymap.resolve` | single keys; `gg`; `Space h/a/p`; sequence timeout; Space falls back to scroll; ignored in inputs; modifier passthrough; `Ctrl+/` inside an input |
+| `resolveKey` / `resolveTimeout` | single keys; `gg`; `Space h/a/p`; sequence timeout; Space falls back to scroll; ignored in inputs; modifier passthrough; `Ctrl+/` inside an input |
 | `validateProjectMetadata` | valid; missing role; invalid domain; error message names the file |
 | `executeTerminalCommand` | `cd about` → navigate; `cd nope` → error; `open <slug>`; `open` with a bad slug; `exit` → close; `help`, `ls`, `cat`, `clear` unchanged |
 
