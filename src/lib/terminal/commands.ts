@@ -1,27 +1,36 @@
 import { getProjectRawBySlug } from '$lib/content/projects';
 import { experienceTimeline, siteContent } from '$lib/data/site';
+import { fileForPath } from '$lib/editor/files';
 import type { ProjectEntry } from '$lib/types';
-
-export type TerminalState = {
-	cwd: '/';
-};
 
 export type TerminalExecutionResult = {
 	output?: string;
 	error?: string;
 	clear?: boolean;
-	nextCwd?: '/';
+	/** Path the page behind the terminal window should navigate to. */
+	navigate?: string;
+	/** Close the terminal window. */
+	close?: boolean;
 };
 
-const ROOT_DIRECTORIES = ['about', 'projects', 'experience', 'contact'] as const;
+// Directories map to the page where that content now lives.
+const CD_TARGETS = new Map<string, string>([
+	['home', '/'],
+	['about', '/about/'],
+	['projects', '/projects/'],
+	['experience', '/about/'],
+	['contact', '/']
+]);
 
 const helpText = [
 	'Available commands:',
 	'  help                Show available commands',
-	'  ls                  List directories/files in current context',
-	'  cd <directory>      Change directory context',
+	'  ls                  List directories and project files',
+	'  cd <directory>      Go to home, about, projects, experience, or contact',
+	'  open <project>      Open a project page',
 	'  cat <filename>      Print file content',
-	'  clear               Clear terminal output'
+	'  clear               Clear terminal output',
+	'  exit                Close the terminal'
 ].join('\n');
 
 const aboutFile = () =>
@@ -44,7 +53,19 @@ const contactFile = () =>
 		...siteContent.links.items.map((link) => `${link.label.toLowerCase()}: ${link.href}`)
 	].join('\n');
 
+// Navigation always prints where it went: a full-screen terminal hides the page behind it.
+const navigateTo = (path: string): TerminalExecutionResult => ({
+	navigate: path,
+	output: `→ ${fileForPath(path)}`
+});
+
 const isProjectFilename = (value: string) => value.endsWith('.md') && value.length > 3;
+
+// "~/about/", "/about", "ABOUT" -> "about"; "~", "/", ".." -> "" (home)
+const normalizeDirectory = (target: string) => {
+	const name = target.toLowerCase().replace(/^~?\/?/, '').replace(/\/+$/, '');
+	return name === '..' ? '' : name;
+};
 
 export const executeTerminalCommand = async (
 	input: string,
@@ -65,34 +86,48 @@ export const executeTerminalCommand = async (
 		case 'clear':
 			return { clear: true };
 
-		case 'ls':
+		case 'exit':
+			return { close: true };
+
+		case 'ls': {
+			const width = Math.max(0, ...projects.map((project) => project.slug.length + 3));
 			return {
 				output: [
-					ROOT_DIRECTORIES.join('  '),
+					[...CD_TARGETS.keys()].join('  '),
 					'',
 					'project files:',
-					...projects.map((project) => `${project.slug}.md`)
+					...projects.map(
+						(project) =>
+							`${`${project.slug}.md`.padEnd(width)}  ${project.role} · ${project.domain}`
+					)
 				].join('\n')
 			};
+		}
 
 		case 'cd': {
 			const target = args[0];
 			if (!target) {
 				return { error: 'cd: missing directory argument' };
 			}
-			if (target === '/') {
-				return { nextCwd: '/' };
-			}
-			if (target === '..') {
-				return { nextCwd: '/' };
-			}
-			if (!ROOT_DIRECTORIES.includes(target as (typeof ROOT_DIRECTORIES)[number])) {
+			const name = normalizeDirectory(target);
+			const path = name === '' ? '/' : CD_TARGETS.get(name);
+			if (!path) {
 				return { error: `cd: no such directory: ${target}` };
 			}
+			return navigateTo(path);
+		}
 
-			return {
-				output: `context switched to /${target}`
-			};
+		case 'open': {
+			const target = args[0];
+			if (!target) {
+				return { error: 'open: missing project name' };
+			}
+			const slug = target.toLowerCase().replace(/\.md$/, '');
+			const project = projects.find((entry) => entry.slug === slug);
+			if (!project) {
+				return { error: `open: ${target}: No such project` };
+			}
+			return navigateTo(`/projects/${project.slug}/`);
 		}
 
 		case 'cat': {

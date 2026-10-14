@@ -1,123 +1,42 @@
 <script lang="ts">
-	import * as emoji from 'node-emoji';
-	import { getTagHighlightStyle } from '$lib/tags/tagStyles';
-	import { onMount } from 'svelte';
-	// @ts-ignore
-	import Typewriter from 'typewriter-effect/dist/core';
+	import Blank from '$lib/components/editor/Blank.svelte';
+	import ProjectCard from '$lib/components/ProjectCard.svelte';
+	import { siteContent } from '$lib/data/site';
+	import { typeIn } from '$lib/editor/typeIn';
 
 	let { data } = $props();
-	let nameElement: HTMLElement;
-
-	onMount(() => {
-		if (nameElement) {
-			const typewriter = new Typewriter(nameElement, {
-				loop: false,
-				delay: 75,
-			});
-			
-			typewriter
-				.typeString(data.siteContent.name)
-				.start();
-		}
-	});
-
-	const categoryColor = (category: string) => {
-		if (category === 'work') return 'text-[var(--nord-8)]';
-		if (category === 'volunteering') return 'text-[var(--nord-7)]';
-		return 'text-[var(--nord-9)]';
-	};
 </script>
 
-<div class="space-y-8">
-	<section class="terminal-surface p-4 space-y-2">
-		<p class="terminal-title text-sm">{data.siteContent.heroCommand}</p>
-		<h1 class="mt-2 text-2xl" bind:this={nameElement}></h1>
-		<p class="text-[var(--nord-8)]">{data.siteContent.role}</p>
-		<p class="mt-3 text-sm leading-relaxed">{data.siteContent.heroDescription}</p>
-	</section>
+<h1>
+	<span class="sr-only">{siteContent.name}</span>
+	<span aria-hidden="true" use:typeIn>{siteContent.name}</span><span class="cursor" aria-hidden="true">█</span>
+</h1>
+<p class="role">{siteContent.role}</p>
+<Blank />
+<p>{siteContent.heroDescription}</p>
+<Blank />
+<h2>featured</h2>
+{#each data.featuredProjects as project (project.slug)}
+	<ProjectCard {project} />
+{/each}
+<p><a href="/projects/">→ see all projects</a></p>
+<Blank />
+<h2>links</h2>
+<p class="links">
+	{#each siteContent.links.items as link (link.href)}
+		<a href={link.href} target="_blank" rel="noreferrer">[{link.label}]</a>
+	{/each}
+	<a href={`mailto:${siteContent.links.contactEmail}`}>[email]</a>
+</p>
 
-	<section class="terminal-surface p-4">
-		<h2 class="terminal-title text-lg">~/experience.md</h2>
-		<div class="mt-4 space-y-4">
-			{#each data.experienceTimeline as item}
-				<article class="border-l border-[var(--nord-3)] pl-3">
-					<p class="text-xs text-[var(--nord-9)]">{item.period}</p>
-					<p class="mt-1 font-semibold">{item.title} @ {item.organization}</p>
-					<p class={`text-xs uppercase ${categoryColor(item.category)}`}>{item.category}</p>
-					<p class="mt-1 text-sm">{item.description}</p>
-				</article>
-			{/each}
-		</div>
-	</section>
+<style>
+	.role {
+		color: var(--nord-9);
+	}
 
-	<section class="terminal-surface p-4">
-		<h2 class="terminal-title text-lg">~/featured-projects.md</h2>
-		<div class="mt-3 grid gap-4 md:grid-cols-3">
-			{#each data.featuredProjects as project}
-				<a href={`/projects/${project.slug}`} class="terminal-surface block p-4 hover:border-[var(--nord-8)]">
-					<p class="text-xs text-[var(--nord-9)]">{project.period}</p>
-					<h3 class="mt-1 font-semibold">{project.title}</h3>
-					<p class="mt-2 text-sm leading-relaxed">{project.summary}</p>
-					<p class="mt-3 text-xs text-[var(--nord-8)]">
-						{#each project.techStack as tech, i}
-							<span
-								data-tag-highlighted="true"
-								style={`color:${getTagHighlightStyle(tech).color}; background-color:${getTagHighlightStyle(tech).backgroundColor}; border-bottom:1px solid ${getTagHighlightStyle(tech).borderColor}; border-radius:0.2em; padding:0 0.12em;`}
-							>
-								{tech}
-							</span>
-							{#if i < project.techStack.length - 1}
-								<span class="text-[var(--nord-9)]"> · </span>
-							{/if}
-						{/each}
-					</p>
-				</a>
-			{/each}
-		</div>
-	</section>
-
-	<section class="terminal-surface p-4">
-		<h2 class="terminal-title text-lg">~/setup.md</h2>
-		{#if data.siteContent.setup.items.length === 0}
-			<p class="mt-3 text-sm">Setup details coming soon.</p>
-		{:else}
-			<div class="mt-3 space-y-2 text-sm">
-				{#each data.siteContent.setup.items as item}
-					<p class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
-						<span class="text-[var(--nord-8)]">{item.label}:</span>
-						<span>{item.value}</span>
-					</p>
-				{/each}
-			</div>
-		{/if}
-	</section>
-
-	<div class="grid gap-4 md:grid-cols-2">
-		<section class="terminal-surface p-4">
-		<h2 class="terminal-title text-lg">~/misc.md</h2>
-		<p class="mt-3 text-sm text-[var(--nord-8)]">Currently:</p>
-		<ul class="mt-2 list-inside list-disc space-y-1 text-sm">
-			{#each data.siteContent.misc.upTo as book}
-				<li>{emoji.emojify(book)}</li>
-			{/each}
-		</ul>
-		</section>
-
-		<section class="terminal-surface p-4">
-			<h2 class="terminal-title text-lg">~/links.md</h2>
-			{#if data.siteContent.links.items.length === 0}
-				<p class="mt-3 text-sm">No links available yet.</p>
-			{:else}
-				<ul class="mt-3 space-y-2 text-sm">
-					{#each data.siteContent.links.items as link}
-						<li><a href={link.href} target="_blank" rel="noreferrer">{link.label}</a></li>
-					{/each}
-				</ul>
-			{/if}
-			<p class="mt-3 text-sm">
-				Contact:
-				<a href={`mailto:${data.siteContent.links.contactEmail}`}>{data.siteContent.links.contactEmail}</a>
-			</p>
-		</section>
-		</div>
-</div>
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 2ch;
+	}
+</style>

@@ -18,25 +18,32 @@
 	--nord-14: #a3be8c;
 	--nord-15: #b48ead;
 
-	/* Typography Scale */
 	--font-body: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-	--font-heading: var(--font-body);
-
-	/* Major Third Scale */
-	--text-base-size: 1.0625rem; /* ~17px */
+	--text-base-size: 1.0625rem;
 	--text-base-lh: 1.65;
-	
-	--text-h1: 2.441rem;
-	--text-h2: 1.953rem;
-	--text-h3: 1.563rem;
-	--text-h4: 1.25rem;
+
+	/* Gutter = line-number column (gutter minus 2ch) + 2ch gap. 6ch fits 4 digits. */
+	--gutter: 6ch;
+	/* Solid, so card labels can paint over their border line on the cursor line. */
+	--cursorline-bg: #353b49;
+}
+
+@media (max-width: 639px) {
+	:root {
+		--gutter: 4ch;
+	}
+}
+
+* {
+	border-radius: 0;
 }
 
 html,
 body {
 	margin: 0;
 	padding: 0;
-	min-height: 100%;
+	height: 100%;
+	overflow: hidden;
 	background: var(--nord-0);
 	color: var(--nord-4);
 	font-family: var(--font-body);
@@ -45,18 +52,15 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: var(--font-heading);
+	font-size: 1em;
 	font-weight: 700;
-	line-height: 1.2;
-	margin-top: 0;
-	margin-bottom: 0.5em;
-	color: var(--nord-6);
+	line-height: inherit;
+	margin: 0;
+	color: var(--nord-8);
 }
 
-h1 { font-size: var(--text-h1); letter-spacing: -0.02em; }
-h2 { font-size: var(--text-h2); letter-spacing: -0.01em; }
-h3 { font-size: var(--text-h3); }
-h4 { font-size: var(--text-h4); }
+h2 { color: var(--nord-9); }
+h3, h4, h5, h6 { color: var(--nord-7); }
 
 a {
 	color: var(--nord-8);
@@ -67,19 +71,136 @@ a:hover {
 	color: var(--nord-7);
 }
 
-.terminal-surface {
-	border: 1px solid var(--nord-3);
-	background: var(--nord-1);
-	border-radius: 0.2em;
+:focus-visible {
+	outline: 1px solid var(--nord-8);
+	outline-offset: 1px;
 }
 
-.terminal-title {
-	color: var(--nord-8);
+/* ---------- buffer ---------- */
+
+.buffer-content {
+	counter-reset: line;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: calc(80ch + var(--gutter));
+	padding: 1lh 1ch 0 var(--gutter);
 }
 
-.site-header {
-	background-color: var(--nord-1);
-	box-shadow:
-		0 1px 0 color-mix(in srgb, var(--nord-0) 80%, transparent),
-		0 4px 14px rgba(0, 0, 0, 0.12);
+.line {
+	display: block;
+}
+
+.blank {
+	height: 1lh;
+}
+
+/* Line numbering. Keep this selector in sync with LINE_SELECTOR in src/lib/editor/lines.ts */
+.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+	counter-increment: line;
+	position: relative;
+	margin: 0;
+}
+
+.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *)::after {
+	content: counter(line);
+	position: absolute;
+	top: 0;
+	left: calc(-1 * var(--gutter));
+	width: calc(var(--gutter) - 2ch);
+	text-align: right;
+	color: var(--nord-3);
+	font-weight: 400;
+	pointer-events: none;
+}
+
+.buffer-content .cursorline {
+	background-color: var(--cursorline-bg);
+	box-shadow: calc(-1 * var(--gutter)) 0 0 var(--cursorline-bg);
+	--row-bg: var(--cursorline-bg);
+}
+
+.buffer-content .cursorline::after {
+	color: var(--nord-4);
+}
+
+/* Markdown look */
+.buffer-content h1::before { content: '# '; color: var(--nord-3); }
+.buffer-content h2::before { content: '## '; color: var(--nord-3); }
+.buffer-content h3::before { content: '### '; color: var(--nord-3); }
+.buffer-content h4::before { content: '#### '; color: var(--nord-3); }
+
+.buffer-content ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.buffer-content ul > li::before {
+	content: '- ';
+	color: var(--nord-3);
+}
+
+.buffer-content ol {
+	margin: 0;
+	padding-left: 3ch;
+}
+
+.buffer-content hr {
+	border: 0;
+	height: 1lh;
+	overflow: visible; /* UA style is hidden, which clips the gutter number */
+	background: linear-gradient(var(--nord-3), var(--nord-3)) center / 100% 1px no-repeat;
+}
+
+/* No overflow on pre: it would clip the gutter number. Wrap instead. */
+.buffer-content pre {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	color: var(--nord-13);
+}
+
+.buffer-content code {
+	color: var(--nord-13);
+}
+
+.buffer-content blockquote {
+	padding-left: 2ch;
+	border-left: 1px solid var(--nord-3);
+	color: var(--nord-4);
+}
+
+.buffer-content img {
+	max-width: 100%;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes line-in {
+	from { opacity: 0; }
+}
+
+.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+	animation: line-in 60ms ease-out both;
+	animation-delay: min(calc(var(--line-index, 0) * 15ms), 240ms);
+}
+
+@keyframes blink {
+	50% { opacity: 0; }
+}
+
+.cursor {
+	color: var(--nord-4);
+	font-weight: 400;
+	animation: blink 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Same selector as the reveal rule above (including :not) so specificity matches and this wins. */
+	.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+		animation: none;
+	}
+
+	.cursor {
+		animation: none;
+	}
 }
