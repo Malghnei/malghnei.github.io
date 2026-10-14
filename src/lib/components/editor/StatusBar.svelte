@@ -13,6 +13,15 @@
 		<button type="button" class="seg restore" onclick={openTerminal}>[terminal]</button>
 	{/if}
 	<span class="spacer"></span>
+	<button
+		type="button"
+		class="seg right help"
+		aria-label="keyboard shortcuts"
+		aria-pressed={editor.helpOpen}
+		onclick={() => (editor.helpOpen = !editor.helpOpen)}
+	>
+		?
+	</button>
 	<span class="seg right hide-sm">utf-8</span>
 	<span class="seg right hide-sm">md</span>
 	<span class="seg right pos">{editor.cursorLine}:1</span>
@@ -49,6 +58,11 @@
 	}
 
 	.restore {
+		color: var(--nord-13);
+		cursor: pointer;
+	}
+
+	.help {
 		color: var(--nord-13);
 		cursor: pointer;
 	}

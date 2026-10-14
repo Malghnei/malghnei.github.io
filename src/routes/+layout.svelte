@@ -7,9 +7,79 @@
 	import Navbar from '$lib/components/editor/Navbar.svelte';
 	import StatusBar from '$lib/components/editor/StatusBar.svelte';
 	import TerminalWindow from '$lib/components/terminal/TerminalWindow.svelte';
+	import { goto } from '$app/navigation';
+	import WhichKey from '$lib/components/editor/WhichKey.svelte';
+	import {
+		isEditableTarget,
+		resolveKey,
+		resolveTimeout,
+		SEQUENCE_TIMEOUT_MS,
+		type KeyAction
+	} from '$lib/editor/keymap';
+	import { editor, toggleTerminal } from '$lib/editor/state.svelte';
 
 	let { children, data } = $props();
+
+	let buffer = $state<ReturnType<typeof Buffer> | undefined>();
+	let pending = '';
+	let pendingTimer: ReturnType<typeof setTimeout> | undefined;
+
+	const runAction = (action: KeyAction) => {
+		switch (action.type) {
+			case 'scroll':
+				return buffer?.moveCursor(action.lines);
+			case 'top':
+				return buffer?.scrollToEdge('top');
+			case 'bottom':
+				return buffer?.scrollToEdge('bottom');
+			case 'pageDown':
+				return buffer?.pageDown();
+			case 'goto':
+				return goto(action.path);
+			case 'toggleTerminal':
+				return toggleTerminal();
+			case 'toggleHelp':
+				editor.helpOpen = !editor.helpOpen;
+				return;
+			case 'closeHelp':
+				editor.helpOpen = false;
+				return;
+		}
+	};
+
+	const onkeydown = (event: KeyboardEvent) => {
+		if (event.defaultPrevented) return;
+		// Space on a focused button or link keeps its native meaning.
+		if (event.key === ' ' && event.target instanceof Element && event.target.closest('button, a, summary')) return;
+
+		const result = resolveKey(pending, {
+			key: event.key,
+			ctrlKey: event.ctrlKey,
+			altKey: event.altKey,
+			metaKey: event.metaKey,
+			inEditable: isEditableTarget(event.target)
+		});
+		pending = '';
+		clearTimeout(pendingTimer);
+
+		if (result.kind === 'passthrough') return;
+		if (result.kind === 'pending') {
+			event.preventDefault();
+			pending = result.pending;
+			pendingTimer = setTimeout(() => {
+				const action = resolveTimeout(pending);
+				pending = '';
+				if (action) runAction(action);
+			}, SEQUENCE_TIMEOUT_MS);
+			return;
+		}
+		// Escape stays unprevented so it can still close browser UI.
+		if (result.action.type !== 'closeHelp') event.preventDefault();
+		runAction(result.action);
+	};
 </script>
+
+<svelte:window {onkeydown} />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
@@ -20,10 +90,11 @@
 <div class="app">
 	<Navbar />
 	<div class="workspace">
-		<Buffer>
+		<Buffer bind:this={buffer}>
 			{@render children()}
 		</Buffer>
 		<TerminalWindow projects={data.projects} />
+		<WhichKey />
 	</div>
 	<StatusBar />
 </div>
