@@ -34,6 +34,7 @@
 
 	.tabs {
 		display: flex;
+		min-width: 0;
 		overflow-x: auto;
 		scrollbar-width: none;
 	}

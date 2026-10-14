@@ -31,6 +31,8 @@
 		height: 100dvh;
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr) auto;
+		/* minmax(0, …): don't let the navbar's tab strip widen the whole app on phones */
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.workspace {

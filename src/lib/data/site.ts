@@ -3,7 +3,6 @@ import type { ExperienceEntry } from '$lib/types';
 export const siteContent = {
 	name: 'Malik Alghneimin',
 	role: 'Aspiring Software Engineer',
-	heroCommand: 'whoami',
 	heroDescription:
 		'I build stuff.',
 	aboutNarrative: [
@@ -11,7 +10,6 @@ export const siteContent = {
 		'I.',
 		'P.'
 	],
-	featuredProjectSlugs: ['condimental', 'sentiment-analysis', 'qiyami'],
 	setup: {
 		items: [
 			{ label: 'IDE', value: 'Cursor' },
@@ -24,11 +22,8 @@ export const siteContent = {
 	},
 	links: {
 		items: [
-			{ label: 'GitHub', href: 'https://github.com/Malghnei' },
-			{ label: 'LinkedIn', href: 'https://linkedin.com/in/malik-alghneimin' },
-			{ label: 'X / Twitter (don\'t have)', href: 'https://x.com/' },
-			{ label: 'Instagram (soon...)', href: 'https://instagram.com/' },
-			// { label: 'Resume', href: '#' }
+			{ label: 'github', href: 'https://github.com/Malghnei' },
+			{ label: 'linkedin', href: 'https://linkedin.com/in/malik-alghneimin' }
 		],
 		contactEmail: 'malikalghneimin@gmail.com'
 	},
