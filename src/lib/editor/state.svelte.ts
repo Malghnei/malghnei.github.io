@@ -1,3 +1,5 @@
+import { siteContent } from '$lib/data/site';
+
 export type TerminalStatus = 'closed' | 'open' | 'minimized';
 
 export const editor = $state({
@@ -39,3 +41,14 @@ export const toggleTerminal = () =>
 export const toggleMaximize = () => {
 	editor.terminal.maximized = !editor.terminal.maximized;
 };
+
+export type TerminalLine = { input?: string; output: string; isError?: boolean };
+
+// Lives here rather than in the component so output and history survive minimize, close and navigation.
+export const session = $state({
+	lines: [
+		{ output: `Welcome to ${siteContent.name}'s interactive terminal.` },
+		{ output: 'Type "help" to see available commands.' }
+	] as TerminalLine[],
+	history: [] as string[]
+});

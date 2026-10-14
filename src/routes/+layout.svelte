@@ -6,8 +6,9 @@
 	import Buffer from '$lib/components/editor/Buffer.svelte';
 	import Navbar from '$lib/components/editor/Navbar.svelte';
 	import StatusBar from '$lib/components/editor/StatusBar.svelte';
+	import TerminalWindow from '$lib/components/terminal/TerminalWindow.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
 <svelte:head>
@@ -22,6 +23,7 @@
 		<Buffer>
 			{@render children()}
 		</Buffer>
+		<TerminalWindow projects={data.projects} />
 	</div>
 	<StatusBar />
 </div>

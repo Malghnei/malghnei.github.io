@@ -24,6 +24,10 @@ const config = {
 		}),
 		paths: {
 			base: ''
+		},
+		// Nothing links to /terminal/ any more, so the crawler wouldn't find the legacy redirect stub.
+		prerender: {
+			entries: ['*', '/terminal/']
 		}
 	},
 	preprocess: [mdsvex({ extensions: ['.svx', '.md'] })],
