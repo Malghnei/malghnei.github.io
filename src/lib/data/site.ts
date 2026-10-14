@@ -12,11 +12,11 @@ export const siteContent = {
 	],
 	setup: {
 		items: [
-			{ label: 'IDE', value: 'Cursor' },
-			{ label: 'Operating System', value: 'Arch Linux (KDE Plasma)' },
-			{ label: 'Terminal', value: 'Kitty + Bash' },
+			{ label: 'IDE', value: 'NeoVim' },
+			{ label: 'Operating System', value: 'Nixos (Hyprland)' },
+			{ label: 'Terminal', value: 'Kitty + Zsh' },
 			{ label: 'Editor Theme', value: 'Nord' },
-			{ label: 'LLM of Choice', value: 'Gemini 3.1 Pro' },
+			{ label: 'LLM of Choice', value: 'Claude Opus 5.5' },
 			{ label: 'Browser', value: 'Zen Browser' }
 		]
 	},
@@ -30,7 +30,7 @@ export const siteContent = {
 	misc: {
 		upTo: [
 			'Vibe Coding random projects :robot:',
-			'Studying for final exams :sob:',
+			'Studying for midterms :sob:',
 			'Doomscrolling :iphone:'
 		]
 	}
@@ -40,7 +40,7 @@ export const experienceTimeline: ExperienceEntry[] = [
 	{
 		title: 'Developer',
 		organization: 'Western Engineering Auto Pilot (WEAP)',
-		period: 'Sept. 2025 - Present',
+		period: 'Sept. 2025 - May 2026',
 		category: 'Extracurricular',
 		description:
 			'Developed algorithms for autonomous vehicle navigation and decision-making.'

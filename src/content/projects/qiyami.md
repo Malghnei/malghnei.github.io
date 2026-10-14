@@ -7,7 +7,6 @@
 		techStack: ['Flutter', 'Dart', 'Mediapipe'],
 		role: 'solo',
 		domain: 'software',
-		featured: true,
 		repoUrl: 'https://github.com/'
 	};
 </script>

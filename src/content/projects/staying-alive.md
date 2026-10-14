@@ -7,7 +7,8 @@
 		techStack: ['Java'],
 		role: 'contribution',
 		domain: 'software',
-		repoUrl: 'https://github.com/Kingsolima/2212-project-game'
+	  featured: true,	
+    repoUrl: 'https://github.com/Kingsolima/2212-project-game'
 	};
 </script>
 
