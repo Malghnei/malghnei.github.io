@@ -34,6 +34,8 @@
 				return buffer?.scrollToEdge('bottom');
 			case 'pageDown':
 				return buffer?.pageDown();
+			case 'pageUp':
+				return buffer?.pageUp();
 			case 'goto':
 				return goto(action.path);
 			case 'toggleTerminal':
@@ -57,7 +59,8 @@
 			ctrlKey: event.ctrlKey,
 			altKey: event.altKey,
 			metaKey: event.metaKey,
-			inEditable: isEditableTarget(event.target)
+			inEditable: isEditableTarget(event.target),
+			onBody: event.target === document.body || event.target === document.documentElement
 		});
 		pending = '';
 		clearTimeout(pendingTimer);

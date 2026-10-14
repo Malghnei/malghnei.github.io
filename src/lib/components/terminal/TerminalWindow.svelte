@@ -117,7 +117,7 @@
 				</span>
 			</div>
 
-			<TerminalSession bind:this={sessionView} {projects} />
+			<TerminalSession bind:this={sessionView} {projects} {fullscreen} />
 
 			{#if !fullscreen}
 				{#each EDGES as edge (edge)}

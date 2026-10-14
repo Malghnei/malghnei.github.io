@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { tick } from 'svelte';
-	import { closeTerminal, session } from '$lib/editor/state.svelte';
+	import { closeTerminal, minimizeTerminal, session } from '$lib/editor/state.svelte';
 	import { executeTerminalCommand } from '$lib/terminal/commands';
 	import type { ProjectEntry } from '$lib/types';
 
-	let { projects }: { projects: ProjectEntry[] } = $props();
+	// fullscreen: the window covers the page, so navigating must get out of the way to be seen.
+	let { projects, fullscreen }: { projects: ProjectEntry[]; fullscreen: boolean } = $props();
 
 	const prompt = 'malik@portfolio:~$';
 
@@ -47,7 +48,10 @@
 		await scrollToEnd();
 
 		// keepFocus: SvelteKit would otherwise move focus to <body> and pull it out of the terminal.
-		if (result.navigate) await goto(result.navigate, { keepFocus: true });
+		if (result.navigate) {
+			await goto(result.navigate, { keepFocus: true });
+			if (fullscreen) minimizeTerminal();
+		}
 		if (result.close) closeTerminal();
 	};
 

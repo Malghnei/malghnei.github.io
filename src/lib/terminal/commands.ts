@@ -1,5 +1,6 @@
 import { getProjectRawBySlug } from '$lib/content/projects';
 import { experienceTimeline, siteContent } from '$lib/data/site';
+import { fileForPath } from '$lib/editor/files';
 import type { ProjectEntry } from '$lib/types';
 
 export type TerminalExecutionResult = {
@@ -51,6 +52,12 @@ const contactFile = () =>
 		`email: ${siteContent.links.contactEmail}`,
 		...siteContent.links.items.map((link) => `${link.label.toLowerCase()}: ${link.href}`)
 	].join('\n');
+
+// Navigation always prints where it went: a full-screen terminal hides the page behind it.
+const navigateTo = (path: string): TerminalExecutionResult => ({
+	navigate: path,
+	output: `→ ${fileForPath(path)}`
+});
 
 const isProjectFilename = (value: string) => value.endsWith('.md') && value.length > 3;
 
@@ -107,7 +114,7 @@ export const executeTerminalCommand = async (
 			if (!path) {
 				return { error: `cd: no such directory: ${target}` };
 			}
-			return { navigate: path };
+			return navigateTo(path);
 		}
 
 		case 'open': {
@@ -120,7 +127,7 @@ export const executeTerminalCommand = async (
 			if (!project) {
 				return { error: `open: ${target}: No such project` };
 			}
-			return { navigate: `/projects/${project.slug}/` };
+			return navigateTo(`/projects/${project.slug}/`);
 		}
 
 		case 'cat': {

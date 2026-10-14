@@ -23,7 +23,12 @@ describe('cd', () => {
 		['cd /about', '/about/'],
 		['cd ABOUT', '/about/']
 	])('%s navigates to %s', async (input, path) => {
-		expect(await run(input)).toEqual({ navigate: path });
+		expect(await run(input)).toMatchObject({ navigate: path });
+	});
+
+	it('says where it went, so a full-screen terminal still shows a result', async () => {
+		expect(await run('cd about')).toEqual({ navigate: '/about/', output: '→ ~/about.md' });
+		expect(await run('cd ~')).toEqual({ navigate: '/', output: '→ ~/home.md' });
 	});
 
 	it('rejects unknown directories, including object prototype keys', async () => {
@@ -38,7 +43,10 @@ describe('cd', () => {
 
 describe('open', () => {
 	it.each(['open condimental', 'open condimental.md', 'open Condimental'])('%s opens the project', async (input) => {
-		expect(await run(input)).toEqual({ navigate: '/projects/condimental/' });
+		expect(await run(input)).toEqual({
+			navigate: '/projects/condimental/',
+			output: '→ ~/projects/condimental.md'
+		});
 	});
 
 	it('reports unknown projects', async () => {

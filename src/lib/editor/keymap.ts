@@ -5,6 +5,7 @@ export type KeyAction =
 	| { type: 'top' }
 	| { type: 'bottom' }
 	| { type: 'pageDown' }
+	| { type: 'pageUp' }
 	| { type: 'goto'; path: NavPath }
 	| { type: 'toggleTerminal' }
 	| { type: 'toggleHelp' }
@@ -16,6 +17,8 @@ export type KeyInput = {
 	altKey: boolean;
 	metaKey: boolean;
 	inEditable: boolean;
+	/** Nothing is focused, so the browser's own scroll keys would do nothing (the page never scrolls). */
+	onBody?: boolean;
 };
 
 export type KeyResult =
@@ -30,6 +33,15 @@ const LEADER = ' ';
 const LEADER_PAGES: Record<string, NavPath> = { h: '/', a: '/about/', p: '/projects/' };
 const NUMBER_PAGES: Record<string, NavPath> = { '1': '/', '2': '/about/', '3': '/projects/' };
 
+const NATIVE_SCROLL_KEYS: Record<string, KeyAction> = {
+	PageDown: { type: 'pageDown' },
+	PageUp: { type: 'pageUp' },
+	Home: { type: 'top' },
+	End: { type: 'bottom' },
+	ArrowDown: { type: 'scroll', lines: 1 },
+	ArrowUp: { type: 'scroll', lines: -1 }
+};
+
 const action = (a: KeyAction): KeyResult => ({ kind: 'action', action: a });
 const passthrough: KeyResult = { kind: 'passthrough' };
 
@@ -38,6 +50,9 @@ export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 		return action({ type: 'toggleTerminal' });
 	}
 	if (input.ctrlKey || input.altKey || input.metaKey || input.inEditable) return passthrough;
+
+	const nativeScroll = input.onBody ? NATIVE_SCROLL_KEYS[input.key] : undefined;
+	if (nativeScroll) return action(nativeScroll);
 
 	if (pending === 'g') return input.key === 'g' ? action({ type: 'top' }) : passthrough;
 	if (pending === LEADER) {

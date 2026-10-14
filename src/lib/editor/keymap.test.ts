@@ -71,6 +71,25 @@ describe('resolveKey', () => {
 	});
 });
 
+describe('native scroll keys with nothing focused', () => {
+	const onBody = { onBody: true };
+
+	it('drives the buffer, since the page itself never scrolls', () => {
+		expect(resolveKey('', key('PageDown', onBody))).toEqual(action({ type: 'pageDown' }));
+		expect(resolveKey('', key('PageUp', onBody))).toEqual(action({ type: 'pageUp' }));
+		expect(resolveKey('', key('End', onBody))).toEqual(action({ type: 'bottom' }));
+		expect(resolveKey('', key('Home', onBody))).toEqual(action({ type: 'top' }));
+		expect(resolveKey('', key('ArrowDown', onBody))).toEqual(action({ type: 'scroll', lines: 1 }));
+		expect(resolveKey('', key('ArrowUp', onBody))).toEqual(action({ type: 'scroll', lines: -1 }));
+	});
+
+	it('leaves them native when something else has focus', () => {
+		expect(resolveKey('', key('PageDown'))).toEqual(passthrough);
+		expect(resolveKey('', key('ArrowDown'))).toEqual(passthrough);
+		expect(resolveKey('', key('End', { onBody: true, inEditable: true }))).toEqual(passthrough);
+	});
+});
+
 describe('resolveTimeout', () => {
 	it('falls back to scrolling a page when the space leader times out', () => {
 		expect(resolveTimeout(' ')).toEqual({ type: 'pageDown' });

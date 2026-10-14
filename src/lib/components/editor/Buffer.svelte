@@ -10,6 +10,9 @@
 	let content: HTMLElement;
 	let lines: HTMLElement[] = [];
 	let scrollFrame = 0;
+	// While j/k/gg/G scroll smoothly, the cursor is already where it should be; don't let onscroll drag it.
+	let programmaticScroll = false;
+	let programmaticTimer: ReturnType<typeof setTimeout> | undefined;
 
 	const scrollBehavior = (): ScrollBehavior =>
 		matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -33,18 +36,36 @@
 		content.classList.add('reveal');
 	};
 
+	const holdCursorDuringScroll = () => {
+		programmaticScroll = true;
+		clearTimeout(programmaticTimer);
+		// scrollend ends it early; the timeout covers scrolls that never start or browsers without scrollend.
+		programmaticTimer = setTimeout(() => (programmaticScroll = false), 600);
+	};
+
+	const onscrollend = () => {
+		programmaticScroll = false;
+		clearTimeout(programmaticTimer);
+	};
+
 	export const moveCursor = (delta: number) => {
+		holdCursorDuringScroll();
 		setCursor(editor.cursorLine - 1 + delta);
 		lines[editor.cursorLine - 1]?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() });
 	};
 
 	export const scrollToEdge = (edge: 'top' | 'bottom') => {
+		holdCursorDuringScroll();
 		scroller.scrollTo({ top: edge === 'top' ? 0 : scroller.scrollHeight, behavior: scrollBehavior() });
 		setCursor(edge === 'top' ? 0 : lines.length - 1);
 	};
 
 	export const pageDown = () => {
 		scroller.scrollBy({ top: scroller.clientHeight * 0.9, behavior: scrollBehavior() });
+	};
+
+	export const pageUp = () => {
+		scroller.scrollBy({ top: -scroller.clientHeight * 0.9, behavior: scrollBehavior() });
 	};
 
 	const onclick = (event: MouseEvent) => {
@@ -55,6 +76,7 @@
 
 	// Like nvim: scrolling only drags the cursor once its line leaves the view.
 	const onscroll = () => {
+		if (programmaticScroll) return;
 		cancelAnimationFrame(scrollFrame);
 		scrollFrame = requestAnimationFrame(() => {
 			const view = scroller.getBoundingClientRect();
@@ -93,7 +115,17 @@
 	});
 </script>
 
-<div class="buffer" bind:this={scroller} {onscroll}>
+<!-- tabindex: lets keyboard users focus the scroll area so arrows/PageDown work natively -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+	class="buffer"
+	bind:this={scroller}
+	{onscroll}
+	{onscrollend}
+	tabindex="0"
+	role="region"
+	aria-label="page content"
+>
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 	<div class="buffer-content" bind:this={content} {onclick}>
 		{@render children()}
@@ -108,6 +140,7 @@
 <style>
 	.buffer {
 		flex: 1;
+		outline-offset: -1px;
 		min-height: 0;
 		overflow-x: hidden;
 		overflow-y: auto;
