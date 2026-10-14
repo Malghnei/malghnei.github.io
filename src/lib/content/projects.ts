@@ -1,9 +1,10 @@
 import type { Component } from 'svelte';
-import type { ProjectEntry, ProjectFrontmatter } from '$lib/types';
+import type { ProjectEntry } from '$lib/types';
+import { validateProjectMetadata } from './validate';
 
 type ProjectModule = {
 	default: Component;
-	metadata: Omit<ProjectFrontmatter, 'slug'>;
+	metadata: Record<string, unknown>;
 };
 
 const projectModules = import.meta.glob('/src/content/projects/*.md');
@@ -28,7 +29,7 @@ export const getAllProjects = async (): Promise<ProjectEntry[]> => {
 
 			return {
 				slug,
-				...loaded.metadata
+				...validateProjectMetadata(slug, loaded.metadata)
 			} satisfies ProjectEntry;
 		})
 	);
@@ -49,7 +50,7 @@ export const getProjectBySlug = async (slug: string): Promise<ProjectEntry | nul
 	return {
 		slug,
 		component: loaded.default,
-		...loaded.metadata
+		...validateProjectMetadata(slug, loaded.metadata)
 	};
 };
 

@@ -5,6 +5,8 @@
 			'2D Type-to-survive game made with Java and Swing for an \'Intro to Software Engineering\' univserity course.',
 		period: 'Apr. 2026',
 		techStack: ['Java'],
+		role: 'contribution',
+		domain: 'software',
 		repoUrl: 'https://github.com/Kingsolima/2212-project-game'
 	};
 </script>

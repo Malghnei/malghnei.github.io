@@ -5,6 +5,8 @@
 			'Highschool project aims to visualize 2D physics concepts in school curriculum WITHOUT the help of external libraries.',
 		period: 'Oct. 2023',
 		techStack: ['SvelteKit', 'TypeScript'],
+		role: 'solo',
+		domain: 'software',
 		repoUrl: 'https://github.com/Malghnei/2D-Physics-Simulation'
 	};
 </script>

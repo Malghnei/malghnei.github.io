@@ -5,7 +5,8 @@
 			'An interactive portfolio with a standard GUI and a command-driven terminal mode powered by shared content sources.',
 		period: 'Dec. 2023',
 		techStack: ['SvelteKit', 'TypeScript', 'Tailwind CSS', 'mdsvex'],
-		featured: true,
+		role: 'solo',
+		domain: 'software',
 		repoUrl: 'https://github.com/',
 		demoUrl: 'https://example.com/'
 	};

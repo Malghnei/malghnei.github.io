@@ -5,6 +5,8 @@
 			'A fun app that uses vision analysis to determine if the content of the picture goes well with mayonnaise.',
 		period: 'Apr. 2026',
 		techStack: ['React', 'Express.js', 'Node.js', 'Cloudflare Workers AI'],
+		role: 'solo',
+		domain: 'software',
 		featured: true,
 		repoUrl: 'https://github.com/Malghnei/Condimental'
 	};

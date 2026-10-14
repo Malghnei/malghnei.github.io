@@ -1,11 +1,16 @@
 import type { Component } from 'svelte';
 
+export type ProjectRole = 'solo' | 'contribution';
+export type ProjectDomain = 'software' | 'hardware';
+
 export type ProjectFrontmatter = {
 	slug: string;
 	title: string;
 	summary: string;
 	period: string;
 	techStack: string[];
+	role: ProjectRole;
+	domain: ProjectDomain;
 	featured?: boolean;
 	repoUrl?: string;
 	demoUrl?: string;
