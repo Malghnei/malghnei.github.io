@@ -148,6 +148,7 @@ a:hover {
 .buffer-content hr {
 	border: 0;
 	height: 1lh;
+	overflow: visible; /* UA style is hidden, which clips the gutter number */
 	background: linear-gradient(var(--nord-3), var(--nord-3)) center / 100% 1px no-repeat;
 }
 

@@ -61,7 +61,7 @@ export const highlightTechStackInElement = (root: HTMLElement, techStackTags: st
 			span.textContent = matchedText;
 			span.style.color = style.color;
 			span.style.backgroundColor = style.backgroundColor;
-			span.style.borderRadius = '0.2em';
+			span.style.borderRadius = '0';
 			span.style.padding = '0 0.12em';
 			span.style.borderBottom = `1px solid ${style.borderColor}`;
 
