@@ -53,23 +53,29 @@
 </ul>
 
 <style>
+	/* Three columns: fixed-width dates, a title that wraps inside its own column, category on the right. */
 	.xp-head {
 		display: inline-flex;
-		flex-wrap: wrap;
 		gap: 0 2ch;
 		width: calc(100% - 2ch);
+		vertical-align: top;
 	}
 
 	.xp-period {
+		flex: none;
+		width: 22ch;
+		white-space: nowrap;
 		color: var(--nord-9);
 	}
 
 	.xp-title {
+		flex: 1;
+		min-width: 0;
 		color: var(--nord-6);
 	}
 
 	.xp-category {
-		margin-left: auto;
+		flex: none;
 	}
 
 	.xp-desc {
@@ -97,6 +103,23 @@
 	}
 
 	@media (max-width: 639px) {
+		.xp-head {
+			flex-wrap: wrap;
+		}
+
+		.xp-period {
+			width: auto;
+		}
+
+		/* Phones: dates, then title; the category doesn't fit beside the dates, and it's the least useful column. */
+		.xp-category {
+			display: none;
+		}
+
+		.xp-title {
+			flex-basis: 100%;
+		}
+
 		.setup-key {
 			width: auto;
 			padding-right: 1ch;

@@ -2,7 +2,7 @@
 	export const metadata = {
 		title: '2D Physics Simulation',
 		summary:
-			'Highschool project aims to visualize 2D physics concepts in school curriculum WITHOUT the help of external libraries.',
+			'Interactive visualizations of high school physics concepts, with the physics written from scratch and no physics libraries.',
 		period: 'Oct. 2023',
 		techStack: ['SvelteKit', 'TypeScript'],
 		role: 'solo',

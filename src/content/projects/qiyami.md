@@ -2,7 +2,7 @@
 	export const metadata = {
 		title: 'Qiyami',
 		summary:
-			'A cross-platform app aimed to teach newly converted muslims how to pray with handless assistance.',
+			'A cross-platform app that teaches new Muslims how to pray, with hands-free guidance.',
 		period: 'Mar. 2026',
 		techStack: ['Flutter', 'Dart', 'Mediapipe'],
 		role: 'solo',

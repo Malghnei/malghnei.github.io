@@ -188,6 +188,14 @@
 		color: var(--nord-6);
 	}
 
+	/* Touch: the one-character _ □ x buttons get 44px targets. */
+	@media (pointer: coarse) {
+		.controls button {
+			min-width: 44px;
+			min-height: 44px;
+		}
+	}
+
 	.handle {
 		position: absolute;
 		touch-action: none;

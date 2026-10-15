@@ -14,20 +14,19 @@
 <p class="role">{siteContent.role}</p>
 <Blank />
 <p>{siteContent.heroDescription}</p>
-<Blank />
-<h2>featured</h2>
-{#each data.featuredProjects as project (project.slug)}
-	<ProjectCard {project} />
-{/each}
-<p><a href="/projects/">→ see all projects</a></p>
-<Blank />
-<h2>links</h2>
+<!-- Contact sits in the hero so it's on the first screen, not after the project cards. -->
 <p class="links">
 	{#each siteContent.links.items as link (link.href)}
 		<a href={link.href} target="_blank" rel="noreferrer">[{link.label}]</a>
 	{/each}
 	<a href={`mailto:${siteContent.links.contactEmail}`}>[email]</a>
 </p>
+<Blank />
+<h2>featured</h2>
+{#each data.featuredProjects as project (project.slug)}
+	<ProjectCard {project} />
+{/each}
+<p><a href="/projects/">→ see all projects</a></p>
 
 <style>
 	.role {

@@ -2,31 +2,24 @@
 	export const metadata = {
 		title: 'Staying Alive',
 		summary:
-			'2D Type-to-survive game made with Java and Swing for an \'Intro to Software Engineering\' univserity course.',
+			'A 2D type-to-survive game in Java and Swing, built by a team of five in 2–3 weeks.',
 		period: 'Apr. 2026',
 		techStack: ['Java'],
 		role: 'contribution',
 		domain: 'software',
-	  featured: true,	
-    repoUrl: 'https://github.com/Kingsolima/2212-project-game'
+		featured: true,
+		repoUrl: 'https://github.com/Kingsolima/2212-project-game'
 	};
 </script>
 
 ## Overview
-This is a 2D level-based survival game where the player has to type words that appear under enemies to eliminate them, within a time constraint.
-
-#
+Enemies close in, each carrying a word. Type the word to take the enemy out, and clear the level before time runs out. Staying Alive is a level-based 2D survival game where your keyboard is your only weapon.
 
 ## Context
-This project was made for a class called "Introduction to Software Engineering" in my second year of university. The project was made in a group of 5 students, and we were given 2-3 weeks to complete it.
-
-#
+We built it as a team of five for "Introduction to Software Engineering" in my second year of university, with 2–3 weeks from start to finish.
 
 ## What I Learnt
-\- Basics of Java
-
-\- Basics of Git & Gitlab
-
-\- Applications of Software Developement Life Cycle (SWLC)
-
-\- Principles of User Experience (UX) & User Interface (UI)
+- Java fundamentals
+- Working in a shared codebase with Git and GitLab
+- Applying the software development life cycle (SDLC) under a real deadline
+- UX and UI design principles

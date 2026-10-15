@@ -55,15 +55,11 @@ export const highlightTechStackInElement = (root: HTMLElement, techStackTags: st
 				fragment.appendChild(document.createTextNode(text.slice(lastIndex, start)));
 			}
 
-			const style = getTagHighlightStyle(matchedText);
+			// Colour only: a fill or underline would make plain text read as a link.
 			const span = document.createElement('span');
 			span.dataset.tagHighlighted = 'true';
 			span.textContent = matchedText;
-			span.style.color = style.color;
-			span.style.backgroundColor = style.backgroundColor;
-			span.style.borderRadius = '0';
-			span.style.padding = '0 0.12em';
-			span.style.borderBottom = `1px solid ${style.borderColor}`;
+			span.style.color = getTagHighlightStyle(matchedText).color;
 
 			fragment.appendChild(span);
 

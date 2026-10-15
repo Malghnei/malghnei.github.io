@@ -2,18 +2,18 @@ import type { ExperienceEntry } from '$lib/types';
 
 export const siteContent = {
 	name: 'Malik Alghneimin',
-	role: 'Aspiring Software Engineer',
+	role: 'Software Developer · CS @ Western University',
 	heroDescription:
-		'I build stuff.',
+		'Building Kata, a martial arts training platform. Open to 2027 internships.',
 	aboutNarrative: [
-		'W.',
-		'I.',
-		'P.'
+		"I'm Malik, a third-year Computer Science student at Western University. I'm most interested in cybersecurity, machine learning, and embedded systems.",
+		"I handle software and electronics for the micro-class team at Western Aero Design. Outside of class, I'm building Kata, a platform that helps people train martial arts on their own.",
+		'Away from the keyboard, I play badminton, train Taekwondo, and go rock climbing. When I want to switch off, it’s video games or a good TV show.'
 	],
 	setup: {
 		items: [
-			{ label: 'IDE', value: 'NeoVim' },
-			{ label: 'Operating System', value: 'Nixos (Hyprland)' },
+			{ label: 'IDE', value: 'Neovim' },
+			{ label: 'Operating System', value: 'NixOS (Hyprland)' },
 			{ label: 'Terminal', value: 'Kitty + Zsh' },
 			{ label: 'Editor Theme', value: 'Nord' },
 			{ label: 'LLM of Choice', value: 'Claude Opus 5.5' },
@@ -25,11 +25,11 @@ export const siteContent = {
 			{ label: 'github', href: 'https://github.com/Malghnei' },
 			{ label: 'linkedin', href: 'https://linkedin.com/in/malik-alghneimin' }
 		],
-		contactEmail: 'malikalghneimin@gmail.com'
+		contactEmail: 'malikalghneimin [@] gmail.com'
 	},
 	misc: {
 		upTo: [
-			'Vibe Coding random projects :robot:',
+			'Building Kata :robot:',
 			'Studying for midterms :sob:',
 			'Doomscrolling :iphone:'
 		]
@@ -43,7 +43,7 @@ export const experienceTimeline: ExperienceEntry[] = [
 		period: 'Sept. 2025 - May 2026',
 		category: 'Extracurricular',
 		description:
-			'Developed algorithms for autonomous vehicle navigation and decision-making.'
+			'Developed navigation and decision-making algorithms for an autonomous vehicle.'
 	},
 	{
 		title: 'Market Research Intern',
@@ -51,7 +51,7 @@ export const experienceTimeline: ExperienceEntry[] = [
 		period: 'Jun. 2025 - Aug. 2025',
 		category: 'Work',
 		description:
-			'Conducted market research for Clirio Inc. to identify potential opportunities for the company to expand into new markets.'
+			'Researched new markets and identified opportunities for Clirio to expand into them.'
 	},
 	{
 		title: 'Camp Counselor - FoY',
@@ -59,14 +59,14 @@ export const experienceTimeline: ExperienceEntry[] = [
 		period: 'Jun. 2024 - Aug. 2024',
 		category: 'Work',
 		description:
-			'Supervised and assisted campers during summer camp activities.'
+			'Supervised and supported campers through daily summer camp activities.'
 	},
 	{
 		title: 'Robotics Team Lead',
-		organization: 'Vex Robotics',
+		organization: 'VEX Robotics',
 		period: 'Oct. 2023 - Dec. 2023',
 		category: 'Extracurricular',
 		description:
-			'Led a team of 5 to build a robot that competed in a local Vex Robotics Competition in Highschool.'
+			'Led a five-person high school team to build a robot for a local VEX Robotics competition.'
 	}
 ];

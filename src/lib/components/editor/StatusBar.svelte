@@ -20,7 +20,7 @@
 		aria-pressed={editor.helpOpen}
 		onclick={() => (editor.helpOpen = !editor.helpOpen)}
 	>
-		?
+		?<span class="hide-sm">{' '}keys</span>
 	</button>
 	<span class="seg right hide-sm">utf-8</span>
 	<span class="seg right hide-sm">md</span>
@@ -78,6 +78,25 @@
 	@media (max-width: 639px) {
 		.hide-sm {
 			display: none;
+		}
+	}
+
+	/* Touch: 44px-tall bar, and the buttons at least 44px wide. */
+	@media (pointer: coarse) {
+		.statusbar {
+			min-height: 44px;
+		}
+
+		.seg,
+		.mode {
+			display: flex;
+			align-items: center;
+		}
+
+		.restore,
+		.help {
+			min-width: 44px;
+			justify-content: center;
 		}
 	}
 </style>

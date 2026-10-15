@@ -4,10 +4,8 @@
 
 	let { project }: { project: ProjectFrontmatter } = $props();
 
-	const tagStyle = (tech: string) => {
-		const style = getTagHighlightStyle(tech);
-		return `color:${style.color}; background-color:${style.backgroundColor};`;
-	};
+	// Text colour only: a filled chip would read as a button, and these aren't clickable.
+	const tagStyle = (tech: string) => `color:${getTagHighlightStyle(tech).color};`;
 </script>
 
 <!-- Four numbered lines: ┌─ title ── period ┐ / summary / meta / └──┘ -->
@@ -23,12 +21,13 @@
 			<span class="tech" data-tag-highlighted="true" style={tagStyle(tech)}>{tech}</span>
 		{/each}
 	</span>
-	<span class="line edge" aria-hidden="true"></span>
+	<span class="line edge" aria-hidden="true"><span class="label open">open →</span></span>
 </a>
 
 <style>
 	.card {
 		--card-border: var(--nord-3);
+		--card-open: var(--nord-9);
 		display: block;
 		position: relative;
 		color: var(--nord-4);
@@ -37,6 +36,7 @@
 	.card:hover,
 	.card:focus-visible {
 		--card-border: var(--nord-8);
+		--card-open: var(--nord-8);
 		color: var(--nord-4);
 		outline: none;
 	}
@@ -81,6 +81,12 @@
 		color: var(--nord-9);
 	}
 
+	/* Always visible, so touch users (no hover) can tell the whole card opens. */
+	.open {
+		margin: 0 1ch 0 auto;
+		color: var(--card-open);
+	}
+
 	.row {
 		padding: 0 2ch;
 	}
@@ -93,9 +99,5 @@
 
 	.kind {
 		color: var(--nord-15);
-	}
-
-	.tech {
-		padding: 0 0.5ch;
 	}
 </style>

@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import type { ProjectEntry } from '$lib/types';
+import { compareProjects } from './order';
 import { validateProjectMetadata } from './validate';
 
 type ProjectModule = {
@@ -34,7 +35,7 @@ export const getAllProjects = async (): Promise<ProjectEntry[]> => {
 		})
 	);
 
-	return entries.sort((a, b) => a.title.localeCompare(b.title));
+	return entries.sort(compareProjects);
 };
 
 export const getProjectBySlug = async (slug: string): Promise<ProjectEntry | null> => {
