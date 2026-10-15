@@ -12,8 +12,7 @@
 	data-preview={encodeTarget({ kind: 'tech', name })}
 	><span class="dim" aria-hidden="true">`</span><span
 		class="name"
-		style:color
-		style:background={`color-mix(in srgb, ${color} 12%, transparent)`}>{name}</span
+		style={`color: ${color}; background: color-mix(in srgb, ${color} 12%, transparent)`}>{name}</span
 	><span class="dim" aria-hidden="true">`</span></a
 >
 
