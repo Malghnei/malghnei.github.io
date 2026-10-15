@@ -14,6 +14,7 @@ export type ProjectFrontmatter = {
 	featured?: boolean;
 	repoUrl?: string;
 	demoUrl?: string;
+	preview?: string;
 };
 
 export type ProjectEntry = ProjectFrontmatter & {

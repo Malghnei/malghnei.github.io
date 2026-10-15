@@ -17,6 +17,8 @@
 	--nord-13: #ebcb8b;
 	--nord-14: #a3be8c;
 	--nord-15: #b48ead;
+	/* 90% nord-15 + 10% nord-6, so purple text clears 4.5:1 on nord-0. */
+	--tag-ml: #ba98b4;
 
 	--font-body: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 	--text-base-size: 1.0625rem;

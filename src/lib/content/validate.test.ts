@@ -32,4 +32,21 @@ describe('validateProjectMetadata', () => {
 			validateProjectMetadata('qiyami', { ...base, role: 'solo', domain: 'firmware' })
 		).toThrow('qiyami.md: invalid domain "firmware"');
 	});
+
+	it('rejects a techStack tag with no category', () => {
+		expect(() =>
+			validateProjectMetadata('kata', { ...base, techStack: ['COBOL'], role: 'solo', domain: 'software' })
+		).toThrow('kata.md: unknown tag "COBOL" (add it to src/lib/tags/categories.ts)');
+	});
+
+	it('rejects a preview that is not a root-relative path', () => {
+		expect(() =>
+			validateProjectMetadata('kata', { ...base, preview: 'kata.png', role: 'solo', domain: 'software' })
+		).toThrow('kata.md: invalid preview "kata.png"');
+	});
+
+	it('accepts a root-relative preview', () => {
+		const metadata = { ...base, preview: '/previews/kata.png', role: 'solo', domain: 'software' };
+		expect(validateProjectMetadata('kata', metadata)).toEqual(metadata);
+	});
 });
