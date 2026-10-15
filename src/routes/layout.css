@@ -218,7 +218,7 @@ a:hover {
 	}
 }
 
-/* Set by the preview pane on the ref it is showing. */
+/* Set by Buffer.svelte on the ref the preview pane is showing. */
 [data-active] {
 	outline: 1px solid var(--nord-8);
 	background: var(--nord-1);

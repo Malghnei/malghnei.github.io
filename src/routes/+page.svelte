@@ -21,7 +21,7 @@
 <p class="role">{siteContent.role}</p>
 <Blank />
 <div class="callout">
-	<p class="status">● {siteContent.status.toLowerCase()}</p>
+	<p class="status"><span aria-hidden="true">●</span> {siteContent.status.toLowerCase()}</p>
 	<p><Prose text={siteContent.heroDescription} /></p>
 </div>
 <!-- Contact sits in the hero so it's on the first screen, not after the project cards. -->

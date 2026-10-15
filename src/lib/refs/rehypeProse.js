@@ -1,6 +1,8 @@
 // Plain JS (not TS) so svelte.config.js can import it.
 // Runs inside mdsvex: each prose text node becomes a <Prose> component, so project and tech
 // names in write-ups are matched during prerender, with the same dictionary as everywhere else.
+// Text containing `{` is left untouched: in mdsvex it holds live Svelte expressions, which a
+// string literal would turn into plain text.
 
 /**
  * The slice of HAST this plugin touches. mdsvex emits `raw` nodes verbatim into the Svelte source.
@@ -46,7 +48,7 @@ const walk = (node, inProse) => {
 	if (inProse && node.children) node.children = joinText(node.children);
 	node.children?.forEach((child, i, children) => {
 		if (child.type === 'text') {
-			if (inProse && child.value?.trim()) {
+			if (inProse && child.value?.trim() && !child.value.includes('{')) {
 				// JSON.stringify gives a valid JS literal for quotes, braces and angle brackets alike.
 				const literal = JSON.stringify(unescape(child.value));
 				children[i] = { type: 'raw', value: `<Prose text={${literal}} />` };

@@ -22,6 +22,11 @@ const run = (tree: Node) => {
 };
 
 describe('rehypeProse', () => {
+	it('leaves text containing a Svelte expression untouched', () => {
+		const tree = run(root(el('p', text('Count: {n}'))));
+		expect(tree.children).toEqual([el('p', text('Count: {n}'))]);
+	});
+
 	it('replaces text in p and li, and adds an instance script with the import', () => {
 		const tree = run(root(el('p', text('Built in Java.')), el('ul', el('li', text('Java fundamentals')))));
 		expect(tree.children).toEqual([
@@ -59,10 +64,10 @@ describe('rehypeProse', () => {
 		expect(tree.children?.[2]).toEqual(el('p', text(' ')));
 	});
 
-	it('passes quotes, braces and angle brackets through as a JS string literal', () => {
-		const tree = run(root(el('p', text('a "quote" {brace} <angle>'))));
+	it('passes quotes and angle brackets through as a JS string literal', () => {
+		const tree = run(root(el('p', text('a "quote" <angle>'))));
 		expect(tree.children?.[1]).toEqual(
-			el('p', raw('<Prose text={"a \\"quote\\" {brace} <angle>"} />'))
+			el('p', raw('<Prose text={"a \\"quote\\" <angle>"} />'))
 		);
 	});
 

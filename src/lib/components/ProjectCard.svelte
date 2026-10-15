@@ -56,6 +56,13 @@
 		background-color: var(--cursorline-bg);
 	}
 
+	/* Forced colors drop backgrounds, so the card's focus needs a real outline. */
+	@media (forced-colors: active) {
+		.card:has(a.title:focus-visible) {
+			outline: 2px solid CanvasText;
+		}
+	}
+
 	/* Vertical sides run from the middle of the top line to the middle of the bottom line. */
 	.card::before {
 		content: '';
