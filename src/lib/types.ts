@@ -29,3 +29,10 @@ export type ExperienceEntry = {
 	category: 'Work' | 'Volunteering' | 'Extracurricular' | 'Internship';
 	description: string;
 };
+
+export type PreviewTarget =
+	| { kind: 'project'; slug: string }
+	| { kind: 'tech'; name: string }
+	| { kind: 'link'; href: string; label: string };
+
+export type LinkInfo = { href: string; label: string; description?: string };
