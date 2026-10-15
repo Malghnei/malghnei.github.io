@@ -45,6 +45,12 @@
 		--row-bg: var(--cursorline-bg);
 	}
 
+	/* The card shows it is active itself; the global [data-active] outline would sit outside it
+	   and be clipped by the next card's label backgrounds. */
+	.card:global([data-active]) {
+		outline: none;
+	}
+
 	.card:has(:global(.cursorline)) .line,
 	.card:global([data-active]) .line {
 		background-color: var(--cursorline-bg);
