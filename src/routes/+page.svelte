@@ -3,8 +3,16 @@
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { siteContent } from '$lib/data/site';
 	import { typeIn } from '$lib/editor/typeIn';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
+
+	// The prerendered HTML only ever holds the "user [@] domain" form; the real address is
+	// assembled in the browser, so scrapers reading the static page don't get it.
+	let emailHref = $state<string>();
+	onMount(() => {
+		emailHref = `mailto:${siteContent.links.contactEmail.replace(/\s*\[@\]\s*/, '@')}`;
+	});
 </script>
 
 <h1>
@@ -19,7 +27,7 @@
 	{#each siteContent.links.items as link (link.href)}
 		<a href={link.href} target="_blank" rel="noreferrer">[{link.label}]</a>
 	{/each}
-	<a href={`mailto:${siteContent.links.contactEmail}`}>[email]</a>
+	<a href={emailHref}>[email]</a>
 </p>
 <Blank />
 <h2>featured</h2>
