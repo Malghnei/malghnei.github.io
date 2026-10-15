@@ -25,7 +25,8 @@
 		const encoded = editor.preview ? encodeTarget(editor.preview) : null;
 		const next = encoded
 			? (Array.from(content.querySelectorAll<HTMLElement>('[data-preview]')).find(
-					(el) => el.dataset.preview === encoded
+					// Hidden elements (e.g. banner variants) must not take the marker.
+					(el) => el.dataset.preview === encoded && el.offsetParent !== null
 				) ?? null)
 			: null;
 		if (next === activeEl) return;
@@ -130,18 +131,28 @@
 		scroller.scrollBy({ top: -scroller.clientHeight * 0.9, behavior: scrollBehavior() });
 	};
 
+	// By geometry rather than closest(): a card's stretched title link covers its other rows,
+	// and the gutter numbers are pointer-events: none, so the element under the pointer can't say.
+	const lineAt = (y: number) => {
+		for (let index = 0; index < lines.length; index++) {
+			const rect = lines[index].getBoundingClientRect();
+			if (rect.top > y) break;
+			if (y < rect.bottom) return index;
+		}
+		return -1;
+	};
+
 	const onclick = (event: MouseEvent) => {
-		const target = (event.target as Element).closest?.(LINE_SELECTOR);
-		const index = target ? lines.indexOf(target as HTMLElement) : -1;
+		const index = lineAt(event.clientY);
 		if (index >= 0) setCursor(index);
 	};
 
 	// Like nvim with mouse=a: the cursor follows the mouse, but hovering never scrolls.
-	const pointAt = (target: Element | null): boolean => {
+	const pointAt = (target: Element | null, y: number): boolean => {
 		if (!target || !content.contains(target)) return false;
-		const line = target.closest<HTMLElement>(LINE_SELECTOR);
-		const index = line ? lines.indexOf(line) : -1;
-		if (index >= 0 && index !== editor.cursorLine - 1) setCursor(index);
+		const index = lineAt(y);
+		// Checked against the DOM: filtering can remove the cursor's line and leave cursorLine stale.
+		if (index >= 0 && !lines[index].classList.contains('cursorline')) setCursor(index);
 		setPreview(target.closest('[data-preview]'));
 		return index >= 0;
 	};
@@ -149,7 +160,7 @@
 	const onpointermove = (event: PointerEvent) => {
 		if (event.pointerType !== 'mouse') return;
 		lastPointer = { x: event.clientX, y: event.clientY };
-		pointAt(event.target as Element);
+		pointAt(event.target as Element, event.clientY);
 	};
 
 	const onpointerleave = () => {
@@ -166,7 +177,7 @@
 		cancelAnimationFrame(scrollFrame);
 		scrollFrame = requestAnimationFrame(() => {
 			// With the mouse resting on a line, wheel scrolling keeps the cursor under it.
-			if (lastPointer && pointAt(document.elementFromPoint(lastPointer.x, lastPointer.y))) return;
+			if (lastPointer && pointAt(document.elementFromPoint(lastPointer.x, lastPointer.y), lastPointer.y)) return;
 			const view = scroller.getBoundingClientRect();
 			const current = lines[editor.cursorLine - 1]?.getBoundingClientRect();
 			if (current && current.bottom > view.top && current.top < view.bottom) return;
