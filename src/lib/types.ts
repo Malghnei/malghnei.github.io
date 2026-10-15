@@ -33,6 +33,7 @@ export type ExperienceEntry = {
 export type PreviewTarget =
 	| { kind: 'project'; slug: string }
 	| { kind: 'tech'; name: string }
-	| { kind: 'link'; href: string; label: string };
+	| { kind: 'link'; href: string; label: string }
+	| { kind: 'experience'; id: string };
 
 export type LinkInfo = { href: string; label: string; description?: string };

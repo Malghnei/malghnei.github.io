@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBanner, variantCss } from './variants';
+import { ART_SCALE, artWidth, parseBanner, variantCss } from './variants';
 
 describe('parseBanner', () => {
 	it('splits rows and trims trailing blank lines', () => {
@@ -36,22 +36,35 @@ describe('parseBanner', () => {
 describe('variantCss', () => {
 	it('shows the full banner when it fits, the fallback below it', () => {
 		const css = variantCss([40]);
-		expect(css).toContain('.banner-h1 .banner, .banner-h1 .banner-fallback { display: none; }');
-		expect(css).toContain('@container buffer (width >= 40ch) { .banner-h1 .v0 { display: block; } }');
-		expect(css).toContain('@container buffer (width < 40ch) { .banner-h1 .banner-fallback { display: block; } }');
+		expect(css).toContain('.buffer-content .banner-row { display: none; }');
+		expect(css).toContain('@container buffer (width >= 40ch) { .buffer-content .banner-row.v0 { display: block; } }');
+		expect(css).toContain('@container buffer (width < 40ch) { .buffer-content .banner-fallback { display: block; } }');
 	});
 
 	it('shows the mobile banner between its width and the full width', () => {
 		const css = variantCss([40, 20]);
-		expect(css).toContain('@container buffer (width >= 40ch) { .banner-h1 .v0 { display: block; } }');
+		expect(css).toContain('@container buffer (width >= 40ch) { .buffer-content .banner-row.v0 { display: block; } }');
 		expect(css).toContain(
-			'@container buffer (20ch <= width < 40ch) { .banner-h1 .v1 { display: block; } }'
+			'@container buffer (20ch <= width < 40ch) { .buffer-content .banner-row.v1 { display: block; } }'
 		);
-		expect(css).toContain('@container buffer (width < 20ch) { .banner-h1 .banner-fallback { display: block; } }');
+		expect(css).toContain('@container buffer (width < 20ch) { .buffer-content .banner-fallback { display: block; } }');
 	});
 
 	it('always shows the fallback without any banner', () => {
-		expect(variantCss([])).toContain('.banner-h1 .banner-fallback { display: block; }');
+		expect(variantCss([])).toContain('.buffer-content .banner-fallback { display: block; }');
 		expect(variantCss([])).not.toContain('@container');
+	});
+});
+
+describe('artWidth', () => {
+	// JetBrains Mono's natural line box is 1.32em; scaled by ART_SCALE it fills one 1.65 body line.
+	it('scales the art so a row is exactly one body line tall', () => {
+		expect(ART_SCALE * 1.32).toBeCloseTo(1.65, 5);
+	});
+
+	it('converts art columns to buffer ch, rounding up so the art never overflows', () => {
+		expect(artWidth(41)).toBe(52);
+		expect(artWidth(40)).toBe(50);
+		expect(artWidth(0)).toBe(0);
 	});
 });

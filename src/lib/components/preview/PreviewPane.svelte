@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExtLink from '$lib/components/refs/ExtLink.svelte';
-	import { siteContent } from '$lib/data/site';
+	import { CATEGORY_COLOR, formatPeriod } from '$lib/data/experience';
+	import { experienceTimeline, siteContent } from '$lib/data/site';
 	import { editor } from '$lib/editor/state.svelte';
 	import { getPreview } from '$lib/preview/getPreview';
 	import { CATEGORY_COLORS } from '$lib/tags/categories';
@@ -19,7 +20,9 @@
 		};
 	});
 
-	const model = $derived(getPreview(editor.preview, projects, email ? [...links, email] : links));
+	const model = $derived(
+		getPreview(editor.preview, projects, email ? [...links, email] : links, experienceTimeline)
+	);
 
 	const winbar = $derived.by(() => {
 		switch (model.kind) {
@@ -31,6 +34,8 @@
 				return `tech: ${model.name}`;
 			case 'link':
 				return `${model.host}${model.path}`;
+			case 'experience':
+				return `experience: ${model.entry.title}`;
 		}
 	});
 </script>
@@ -97,7 +102,19 @@
 			<p>
 				<a href={`/projects/?tag=${encodeURIComponent(model.name)}`}>→ filter projects by {model.name}</a>
 			</p>
-		{:else}
+		{:else if model.kind === 'experience'}
+			{@const entry = model.entry}
+			<p><strong>{entry.title}</strong></p>
+			<p class="blank"></p>
+			<p><span class="key">organization:</span> {entry.organization}</p>
+			<p><span class="key">period:</span> {formatPeriod(entry.period)}</p>
+			<p>
+				<span class="key">category:</span>
+				<span style={`color:${CATEGORY_COLOR[entry.category]}`}>{entry.category.toLowerCase()}</span>
+			</p>
+			<p class="blank"></p>
+			<p>{entry.description}</p>
+		{:else if model.kind === 'link'}
 			<p><ExtLink href={model.href} label={model.label} /></p>
 			<p class="blank"></p>
 			<p><span class="key">host:</span> {model.host || '—'}</p>
@@ -107,7 +124,8 @@
 				<p>{model.context}</p>
 			{/if}
 		{/if}
-		{#if model.kind !== 'idle'}
+		<!-- Only kinds with somewhere to go get the Enter hint. -->
+		{#if model.kind !== 'idle' && model.kind !== 'experience'}
 			<p class="blank"></p>
 			<p class="hints"><span class="key">⏎</span> open</p>
 		{/if}
