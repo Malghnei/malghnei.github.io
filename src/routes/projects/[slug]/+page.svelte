@@ -1,25 +1,18 @@
 <script lang="ts">
 	import Blank from '$lib/components/editor/Blank.svelte';
-	import { highlightTechStackInElement } from '$lib/tags/inlineTagHighlighter';
+	import ExtLink from '$lib/components/refs/ExtLink.svelte';
+	import TechRef from '$lib/components/refs/TechRef.svelte';
+	import { setRefExclude } from '$lib/refs/context';
 
 	let { data } = $props();
 
-	let contentEl = $state<HTMLElement | null>(null);
+	// A getter: this page is reused between projects, so the title must be read lazily.
+	setRefExclude(() => [data.project.title]);
 
 	// Same order as the projects list, so prev/next walks it.
 	const index = $derived(data.projects.findIndex((project) => project.slug === data.project.slug));
 	const prev = $derived(index > 0 ? data.projects[index - 1] : undefined);
 	const next = $derived(index >= 0 ? data.projects[index + 1] : undefined);
-
-	// The {#key} below recreates contentEl when moving between projects (e.g. `open` in the terminal),
-	// so this runs once per project body.
-	$effect(() => {
-		const el = contentEl;
-		const stack = data.project.techStack;
-		if (!el) return;
-		const frame = requestAnimationFrame(() => highlightTechStackInElement(el, stack));
-		return () => cancelAnimationFrame(frame);
-	});
 </script>
 
 <h1>{data.project.title}</h1>
@@ -30,21 +23,24 @@
 	<span class="fm-key">role:</span> {data.project.role} · <span class="fm-key">type:</span>
 	{data.project.domain}
 </p>
-<p><span class="fm-key">stack:</span> {data.project.techStack.join(' · ')}</p>
+<p><span class="fm-key">stack:</span> {#each data.project.techStack as tech, i (tech)}{#if i > 0}
+		·
+	{/if}<TechRef name={tech} />{/each}
+</p>
 <p class="fm">---</p>
 {#if data.project.repoUrl || data.project.demoUrl}
 	<p class="fm-links">
 		{#if data.project.repoUrl}
-			<a href={data.project.repoUrl} target="_blank" rel="noreferrer">[source]</a>
+			<ExtLink href={data.project.repoUrl} label="source" />
 		{/if}
 		{#if data.project.demoUrl}
-			<a href={data.project.demoUrl} target="_blank" rel="noreferrer">[demo]</a>
+			<ExtLink href={data.project.demoUrl} label="demo" />
 		{/if}
 	</p>
 {/if}
 <Blank />
 {#key data.project.slug}
-	<div class="project-body" bind:this={contentEl}>
+	<div class="project-body">
 		<data.project.component />
 	</div>
 {/key}

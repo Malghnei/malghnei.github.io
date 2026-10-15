@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Blank from '$lib/components/editor/Blank.svelte';
+	import ExtLink from '$lib/components/refs/ExtLink.svelte';
+	import Prose from '$lib/components/refs/Prose.svelte';
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { siteContent } from '$lib/data/site';
 	import { typeIn } from '$lib/editor/typeIn';
@@ -21,13 +23,13 @@
 </h1>
 <p class="role">{siteContent.role}</p>
 <Blank />
-<p>{siteContent.heroDescription}</p>
+<p><Prose text={siteContent.heroDescription} /></p>
 <!-- Contact sits in the hero so it's on the first screen, not after the project cards. -->
 <p class="links">
 	{#each siteContent.links.items as link (link.href)}
-		<a href={link.href} target="_blank" rel="noreferrer">[{link.label}]</a>
+		<ExtLink href={link.href} label={link.label} />
 	{/each}
-	<a href={emailHref}>[email]</a>
+	<ExtLink href={emailHref} label="email" />
 </p>
 <Blank />
 <h2>featured</h2>

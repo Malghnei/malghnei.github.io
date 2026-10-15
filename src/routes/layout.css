@@ -206,3 +206,9 @@ a:hover {
 		animation: none;
 	}
 }
+
+/* Set by the preview pane on the ref it is showing. */
+[data-active] {
+	outline: 1px solid var(--nord-8);
+	background: var(--nord-1);
+}

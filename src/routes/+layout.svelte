@@ -17,8 +17,13 @@
 		type KeyAction
 	} from '$lib/editor/keymap';
 	import { editor, toggleTerminal } from '$lib/editor/state.svelte';
+	import { setRefsContext } from '$lib/refs/context';
+	import { buildDictionary } from '$lib/refs/tokenize';
 
 	let { children, data } = $props();
+
+	// The project list is static, so the dictionary is built once.
+	setRefsContext({ dict: buildDictionary(data.projects) });
 
 	let buffer = $state<ReturnType<typeof Buffer> | undefined>();
 	let pending = '';
