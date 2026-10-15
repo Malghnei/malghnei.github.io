@@ -22,8 +22,13 @@
 
 	let { children, data } = $props();
 
-	// The project list is static, so the dictionary is built once.
-	setRefsContext({ dict: buildDictionary(data.projects) });
+	// A getter, so readers always see the dictionary for the current data.
+	const dict = $derived(buildDictionary(data.projects));
+	setRefsContext({
+		get dict() {
+			return dict;
+		}
+	});
 
 	let buffer = $state<ReturnType<typeof Buffer> | undefined>();
 	let pending = '';

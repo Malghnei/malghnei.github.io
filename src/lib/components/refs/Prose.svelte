@@ -6,9 +6,9 @@
 
 	let { text }: { text: string } = $props();
 
-	const { dict } = getRefsContext();
+	const refs = getRefsContext();
 	const exclude = getRefExclude();
-	const segments = $derived(tokenize(text, dict, { exclude: exclude() }));
+	const segments = $derived(tokenize(text, refs.dict, { exclude: exclude() }));
 </script>
 
 <!-- No wrapper element: this flows inside the caller's <p>, which is the numbered line. -->
