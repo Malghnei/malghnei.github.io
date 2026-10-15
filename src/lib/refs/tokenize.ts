@@ -7,8 +7,6 @@ export type Segment =
 	| { type: 'project'; value: string; slug: string }
 	| { type: 'tech'; value: string };
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 const isWordChar = (ch: string | undefined) => ch !== undefined && /[A-Za-z0-9]/.test(ch);
 
 export const buildDictionary = (projects: ProjectFrontmatter[]): Dictionary => ({
@@ -28,36 +26,28 @@ export const tokenize = (
 		.sort((a, b) => b.length - a.length);
 	if (names.length === 0) return [{ type: 'text', value: text }];
 
-	// Longest first, so the alternation prefers "React Native" over "React".
-	const pattern = new RegExp(names.map(escapeRegExp).join('|'), 'g');
 	const segments: Segment[] = [];
 	let last = 0;
-
-	const pushText = (value: string) => {
-		if (!value) return;
-		const prev = segments[segments.length - 1];
-		if (prev?.type === 'text') prev.value += value;
-		else segments.push({ type: 'text', value });
-	};
-
-	let m: RegExpExecArray | null;
-	while ((m = pattern.exec(text))) {
-		const start = m.index;
-		const end = start + m[0].length;
+	let i = 0;
+	while (i < text.length) {
 		// Manual boundary check: \b fails next to the "." in "Node.js".
-		if (isWordChar(text[start - 1]) || isWordChar(text[end])) {
-			pattern.lastIndex = start + 1;
+		// Names are longest first, so the first whole-word hit wins; a rejected
+		// long name ("React Nativex") still lets a shorter one ("React") match.
+		const name = isWordChar(text[i - 1])
+			? undefined
+			: names.find((n) => text.startsWith(n, i) && !isWordChar(text[i + n.length]));
+		if (name === undefined) {
+			i++;
 			continue;
 		}
-		pushText(text.slice(last, start));
-		const slug = dict.projects.get(m[0]);
+		if (i > last) segments.push({ type: 'text', value: text.slice(last, i) });
+		const slug = dict.projects.get(name);
 		segments.push(
-			slug !== undefined
-				? { type: 'project', value: m[0], slug }
-				: { type: 'tech', value: m[0] }
+			slug !== undefined ? { type: 'project', value: name, slug } : { type: 'tech', value: name }
 		);
-		last = end;
+		i += name.length;
+		last = i;
 	}
-	pushText(text.slice(last));
+	if (last < text.length) segments.push({ type: 'text', value: text.slice(last) });
 	return segments;
 };

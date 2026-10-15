@@ -17,6 +17,8 @@ const dict = buildDictionary([
 	project('site', 'Site', ['Node.js'])
 ]);
 
+const dict2 = buildDictionary([project('n', 'N', ['Node', 'Node.js'])]);
+
 describe('buildDictionary', () => {
 	it('maps titles to slugs and collects tech', () => {
 		expect(dict.projects.get('Kata')).toBe('kata');
@@ -78,6 +80,32 @@ describe('tokenize', () => {
 			{ type: 'tech', value: 'Java' },
 			{ type: 'text', value: ',' },
 			{ type: 'tech', value: 'React' }
+		]);
+	});
+
+	it('falls back to a shorter whole-word match when the longer one is rejected', () => {
+		expect(tokenize('React Nativex', dict)).toEqual([
+			{ type: 'tech', value: 'React' },
+			{ type: 'text', value: ' Nativex' }
+		]);
+		expect(tokenize('Node.jsx', dict2)).toEqual([
+			{ type: 'tech', value: 'Node' },
+			{ type: 'text', value: '.jsx' }
+		]);
+	});
+
+	it('is case sensitive', () => {
+		expect(tokenize('java', dict)).toEqual([{ type: 'text', value: 'java' }]);
+	});
+
+	it('does not match a name followed by a word character', () => {
+		expect(tokenize('Javas', dict)).toEqual([{ type: 'text', value: 'Javas' }]);
+	});
+
+	it('excludes a project title but still matches others', () => {
+		expect(tokenize('Site and Kata', dict, { exclude: ['Site'] })).toEqual([
+			{ type: 'text', value: 'Site and ' },
+			{ type: 'project', value: 'Kata', slug: 'kata' }
 		]);
 	});
 });
