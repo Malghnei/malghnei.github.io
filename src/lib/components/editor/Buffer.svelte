@@ -17,9 +17,18 @@
 	const scrollBehavior = (): ScrollBehavior =>
 		matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
+	// Chromium leaves counter() in later lines' ::after stale when earlier counted lines are removed;
+	// toggling the scope's counter-reset makes it recount, keeping the gutter numbers CSS-driven.
+	const recountGutter = () => {
+		content.style.counterReset = 'none';
+		void content.offsetWidth;
+		content.style.counterReset = '';
+	};
+
 	const collectLines = () => {
 		lines = Array.from(content.querySelectorAll<HTMLElement>(LINE_SELECTOR));
 		lines.forEach((line, index) => line.style.setProperty('--line-index', String(index)));
+		recountGutter();
 	};
 
 	const setCursor = (index: number) => {
