@@ -1,5 +1,25 @@
 @import 'tailwindcss';
 
+/* The fontsource subsets omit arrows, box drawing, block and shape glyphs; this fills them from the same font. */
+@font-face {
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/jetbrains-mono-symbols.woff2') format('woff2');
+	unicode-range: U+2190-21FF, U+2500-259F, U+25A0-25FF;
+}
+
+/* The fontsource subsets omit arrows, box drawing, block and shape glyphs; this fills them from the same font. */
+@font-face {
+	font-family: 'JetBrains Mono';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('/fonts/jetbrains-mono-symbols-bold.woff2') format('woff2');
+	unicode-range: U+2190-21FF, U+2500-259F, U+25A0-25FF;
+}
+
 :root {
 	--nord-0: #2e3440;
 	--nord-1: #3b4252;
