@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { filterProjects, type ProjectFilters } from '$lib/content/filter';
@@ -42,8 +42,16 @@
 	const filtered = $derived(filterProjects(data.projects, { query, role, domain, tags: selectedTags }));
 
 	// Client-only: pages are prerendered, so search params are unavailable at build time.
-	onMount(() => {
-		selectedTags = page.url.searchParams.getAll('tag').filter((t) => allTags.includes(t));
+	// Re-applies only when the URL's tag list changes (same-route navigation, back/forward),
+	// so it never fights the user's own chip toggles.
+	let appliedKey: string | null = null;
+	$effect(() => {
+		if (!browser) return;
+		const fromUrl = [...new Set(page.url.searchParams.getAll('tag'))].filter((t) => allTags.includes(t));
+		const key = fromUrl.join('\u0000');
+		if (key === appliedKey) return;
+		appliedKey = key;
+		selectedTags = fromUrl;
 	});
 
 	const toggleTag = (tag: string) => {

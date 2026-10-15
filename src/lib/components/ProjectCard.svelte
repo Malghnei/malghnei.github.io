@@ -61,6 +61,7 @@
 		border-left: 1px solid var(--card-border);
 		border-right: 1px solid var(--card-border);
 		pointer-events: none;
+		z-index: 1; /* above the active row fills, which would otherwise hide the sides */
 	}
 
 	/* Horizontal rule through the middle of the line; labels paint over it. */
