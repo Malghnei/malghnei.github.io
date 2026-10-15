@@ -90,11 +90,20 @@
 		text-decoration: none;
 	}
 
-	/* Stretch the title link over the whole card so the card opens from anywhere. */
+	/* Every numbered line is position: relative (layout.css), which would trap the title's overlay
+	   in the top row; static here makes the card its containing block. The card's box matches
+	   this row's left and top, so the row's gutter number stays put. */
+	.card > .edge:first-child {
+		position: static;
+	}
+
+	/* Stretch the title link over the whole card so the card opens from anywhere.
+	   z-index lifts it over the later (positioned) rows; tech refs sit above it. */
 	.title::after {
 		content: '';
 		position: absolute;
 		inset: 0;
+		z-index: 1;
 	}
 
 	.title:focus-visible {
@@ -103,7 +112,7 @@
 
 	.tech {
 		position: relative;
-		z-index: 1;
+		z-index: 2;
 	}
 
 	.period {

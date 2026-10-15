@@ -182,7 +182,9 @@ a:hover {
 }
 
 .buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
-	animation: line-in 60ms ease-out both;
+	/* backwards, not both: a lingering forwards fill keeps every line its own stacking context,
+	   which traps a card's stretched title link under its later rows. */
+	animation: line-in 60ms ease-out backwards;
 	animation-delay: min(calc(var(--line-index, 0) * 15ms), 240ms);
 }
 
