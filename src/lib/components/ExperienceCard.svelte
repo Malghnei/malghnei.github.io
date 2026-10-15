@@ -62,7 +62,8 @@
 		min-height: 1lh;
 		justify-content: space-between;
 		background-image: linear-gradient(var(--card-border), var(--card-border));
-		background-position: center;
+		/* Pinned to the first line, where the sides start: long titles wrap on phones. */
+		background-position: 0 calc(0.5lh - 0.5px);
 		background-size: 100% 1px;
 		background-repeat: no-repeat;
 	}
@@ -74,6 +75,7 @@
 
 	.title {
 		margin-left: 1ch;
+		margin-right: 1ch; /* leaves the top-right corner of the rule showing when the title wraps */
 		min-width: 0;
 		color: var(--nord-6);
 		font-weight: 700;
