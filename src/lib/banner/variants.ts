@@ -20,17 +20,18 @@ export const parseBanner = (raw: string): BannerVariant => {
 // previous one's; the plain heading takes everything narrower. `ch` in a container condition
 // resolves against the container's font, which is the buffer font the rows render in.
 export const variantCss = (widths: number[]): string => {
-	const rules = ['.banner-h1 .banner, .banner-h1 .banner-fallback { display: none; }'];
+	// .buffer-content outranks the global `.line { display: block }` whatever the stylesheet order.
+	const rules = ['.buffer-content .banner-row { display: none; }'];
 	if (widths.length === 0) {
-		rules.push('.banner-h1 .banner-fallback { display: block; }');
+		rules.push('.buffer-content .banner-fallback { display: block; }');
 		return rules.join('\n');
 	}
 	widths.forEach((w, i) => {
 		const range = i === 0 ? `width >= ${w}ch` : `${w}ch <= width < ${widths[i - 1]}ch`;
-		rules.push(`@container buffer (${range}) { .banner-h1 .v${i} { display: block; } }`);
+		rules.push(`@container buffer (${range}) { .buffer-content .banner-row.v${i} { display: block; } }`);
 	});
 	rules.push(
-		`@container buffer (width < ${Math.min(...widths)}ch) { .banner-h1 .banner-fallback { display: block; } }`
+		`@container buffer (width < ${Math.min(...widths)}ch) { .buffer-content .banner-fallback { display: block; } }`
 	);
 	return rules.join('\n');
 };

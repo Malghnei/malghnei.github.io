@@ -23,28 +23,21 @@
 	{@html css}
 </svelte:head>
 
-<h1 class="banner-h1">
-	<span class="sr-only">{name}</span>
-	{#each variants as v, i (i)}
-		<span class="banner v{i}" aria-hidden="true">
-			{#each v.rows as row, r (r)}<span class="line">{row}{#if r === v.rows.length - 1}<span
-							class="cursor">█</span
-						>{/if}</span
-				>{/each}
-		</span>
-	{/each}
-	<span class="line banner-fallback" aria-hidden="true"
-		><span use:typeIn>{name}</span><span class="cursor">█</span></span
-	>
-</h1>
+<!-- The rows are siblings of the page's other lines, not children of the h1: Firefox doesn't
+     carry a count made inside a non-counting element on to the lines after it, so nesting
+     restarted the gutter numbers after the banner. The h1 only names the page for assistive tech. -->
+<h1 class="banner-h1 sr-only">{name}</h1>
+{#each variants as v, i (i)}
+	{#each v.rows as row, r (r)}<span class="line banner-row banner-art v{i}" aria-hidden="true"
+			>{row}{#if r === v.rows.length - 1}<span class="cursor">█</span>{/if}</span
+		>{/each}
+{/each}
+<span class="line banner-row banner-fallback" aria-hidden="true"
+	><span use:typeIn>{name}</span><span class="cursor">█</span></span
+>
 
 <style>
-	/* The h1 is a wrapper, not a line: its rows carry the markdown look themselves. */
-	.banner-h1::before {
-		content: none;
-	}
-
-	.banner .line {
+	.banner-art {
 		/* Block art is drawn to fill the font's natural line box; the body's 1.65 would stripe it. */
 		line-height: normal;
 		min-height: 1lh;

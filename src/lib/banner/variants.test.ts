@@ -36,22 +36,22 @@ describe('parseBanner', () => {
 describe('variantCss', () => {
 	it('shows the full banner when it fits, the fallback below it', () => {
 		const css = variantCss([40]);
-		expect(css).toContain('.banner-h1 .banner, .banner-h1 .banner-fallback { display: none; }');
-		expect(css).toContain('@container buffer (width >= 40ch) { .banner-h1 .v0 { display: block; } }');
-		expect(css).toContain('@container buffer (width < 40ch) { .banner-h1 .banner-fallback { display: block; } }');
+		expect(css).toContain('.buffer-content .banner-row { display: none; }');
+		expect(css).toContain('@container buffer (width >= 40ch) { .buffer-content .banner-row.v0 { display: block; } }');
+		expect(css).toContain('@container buffer (width < 40ch) { .buffer-content .banner-fallback { display: block; } }');
 	});
 
 	it('shows the mobile banner between its width and the full width', () => {
 		const css = variantCss([40, 20]);
-		expect(css).toContain('@container buffer (width >= 40ch) { .banner-h1 .v0 { display: block; } }');
+		expect(css).toContain('@container buffer (width >= 40ch) { .buffer-content .banner-row.v0 { display: block; } }');
 		expect(css).toContain(
-			'@container buffer (20ch <= width < 40ch) { .banner-h1 .v1 { display: block; } }'
+			'@container buffer (20ch <= width < 40ch) { .buffer-content .banner-row.v1 { display: block; } }'
 		);
-		expect(css).toContain('@container buffer (width < 20ch) { .banner-h1 .banner-fallback { display: block; } }');
+		expect(css).toContain('@container buffer (width < 20ch) { .buffer-content .banner-fallback { display: block; } }');
 	});
 
 	it('always shows the fallback without any banner', () => {
-		expect(variantCss([])).toContain('.banner-h1 .banner-fallback { display: block; }');
+		expect(variantCss([])).toContain('.buffer-content .banner-fallback { display: block; }');
 		expect(variantCss([])).not.toContain('@container');
 	});
 });

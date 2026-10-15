@@ -137,13 +137,6 @@ a:hover {
 	pointer-events: none;
 }
 
-/* The banner h1 isn't a line, but it touches the counter (by 0). With .buffer-content's style
-   containment (container-type), Chromium otherwise gives lines nested in a non-counting first
-   child a fresh counter, and numbering restarts at 1 after the banner. */
-.buffer-content .banner-h1 {
-	counter-increment: line 0;
-}
-
 .buffer-content .cursorline {
 	background-color: var(--cursorline-bg);
 	box-shadow: calc(-1 * var(--gutter)) 0 0 var(--cursorline-bg);
