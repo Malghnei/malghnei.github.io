@@ -39,4 +39,14 @@ describe('parseTarget', () => {
 		expect(parseTarget('', '')).toBeNull();
 		expect(parseTarget(null, '')).toBeNull();
 	});
+
+	it('round-trips an experience', () => {
+		const t = { kind: 'experience', id: 'developer-weap' } as const;
+		expect(encodeTarget(t)).toBe('experience:developer-weap');
+		expect(parseTarget(encodeTarget(t), '')).toEqual(t);
+	});
+
+	it('rejects an experience with no id', () => {
+		expect(parseTarget('experience:', '')).toBeNull();
+	});
 });

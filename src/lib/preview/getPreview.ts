@@ -1,9 +1,11 @@
 import { getTagCategory, type TagCategory } from '$lib/tags/categories';
-import type { LinkInfo, PreviewTarget, ProjectFrontmatter } from '$lib/types';
+import { experienceId } from '$lib/data/experience';
+import type { ExperienceEntry, LinkInfo, PreviewTarget, ProjectFrontmatter } from '$lib/types';
 
 export type PreviewModel =
 	| { kind: 'idle' }
 	| { kind: 'project'; project: ProjectFrontmatter }
+	| { kind: 'experience'; entry: ExperienceEntry }
 	| {
 			kind: 'tech';
 			name: string;
@@ -47,7 +49,8 @@ const linkContext = (
 export const getPreview = (
 	target: PreviewTarget | null,
 	projects: ProjectFrontmatter[],
-	links: LinkInfo[]
+	links: LinkInfo[],
+	experience: ExperienceEntry[] = []
 ): PreviewModel => {
 	if (!target) return { kind: 'idle' };
 
@@ -65,6 +68,11 @@ export const getPreview = (
 			category: getTagCategory(target.name),
 			projects: used
 		};
+	}
+
+	if (target.kind === 'experience') {
+		const entry = experience.find((e) => experienceId(e) === target.id);
+		return entry ? { kind: 'experience', entry } : { kind: 'idle' };
 	}
 
 	const context = linkContext(target.href, projects, links);

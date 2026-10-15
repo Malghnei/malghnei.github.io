@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getPreview } from './getPreview';
-import type { LinkInfo, ProjectFrontmatter } from '$lib/types';
+import type { ExperienceEntry, LinkInfo, ProjectFrontmatter } from '$lib/types';
 
 const project = (over: Partial<ProjectFrontmatter>): ProjectFrontmatter => ({
 	slug: 'kata',
@@ -115,5 +115,30 @@ describe('getPreview', () => {
 		expect(
 			getPreview({ kind: 'link', href: 'not a url', label: 'x' }, projects, links)
 		).toMatchObject({ kind: 'link', host: '', path: '', href: 'not a url' });
+	});
+});
+
+describe('getPreview experience', () => {
+	const weap: ExperienceEntry = {
+		title: 'Developer',
+		organization: 'Western Engineering Auto Pilot (WEAP)',
+		period: 'Sept. 2025 - May 2026',
+		category: 'Extracurricular',
+		description: 'Developed navigation.'
+	};
+
+	it('returns the matching entry', () => {
+		expect(getPreview({ kind: 'experience', id: 'developer-weap' }, projects, links, [weap])).toEqual({
+			kind: 'experience',
+			entry: weap
+		});
+	});
+
+	it('is idle for an unknown id', () => {
+		expect(getPreview({ kind: 'experience', id: 'gone' }, projects, links, [weap])).toEqual({ kind: 'idle' });
+	});
+
+	it('is idle when no experience list is passed', () => {
+		expect(getPreview({ kind: 'experience', id: 'developer-weap' }, projects, links)).toEqual({ kind: 'idle' });
 	});
 });

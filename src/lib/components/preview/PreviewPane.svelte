@@ -31,6 +31,8 @@
 				return `tech: ${model.name}`;
 			case 'link':
 				return `${model.host}${model.path}`;
+			case 'experience':
+				return `experience: ${model.entry.title}`;
 		}
 	});
 </script>
@@ -97,7 +99,7 @@
 			<p>
 				<a href={`/projects/?tag=${encodeURIComponent(model.name)}`}>→ filter projects by {model.name}</a>
 			</p>
-		{:else}
+		{:else if model.kind === 'link'}
 			<p><ExtLink href={model.href} label={model.label} /></p>
 			<p class="blank"></p>
 			<p><span class="key">host:</span> {model.host || '—'}</p>

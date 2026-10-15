@@ -3,6 +3,7 @@ import type { PreviewTarget } from '$lib/types';
 export const encodeTarget = (t: PreviewTarget): string => {
 	if (t.kind === 'project') return `project:${t.slug}`;
 	if (t.kind === 'tech') return `tech:${t.name}`;
+	if (t.kind === 'experience') return `experience:${t.id}`;
 	return `link:${t.href}`;
 };
 
@@ -17,5 +18,6 @@ export const parseTarget = (value: string | null, label: string): PreviewTarget 
 	if (kind === 'project') return { kind, slug: id };
 	if (kind === 'tech') return { kind, name: id };
 	if (kind === 'link') return { kind, href: id, label };
+	if (kind === 'experience') return { kind, id };
 	return null;
 };
