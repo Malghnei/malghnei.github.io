@@ -21,18 +21,26 @@
 	const scrollBehavior = (): ScrollBehavior =>
 		matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
+	const mark = (el: HTMLElement | null) => {
+		if (el === activeEl) return;
+		activeEl?.removeAttribute('data-active');
+		el?.setAttribute('data-active', '');
+		activeEl = el;
+	};
+
+	// The marker stays on the element that set the target (it shows which item the preview
+	// describes); only if a re-render dropped or hid it does the first visible match take over.
 	const markActive = () => {
 		const encoded = editor.preview ? encodeTarget(editor.preview) : null;
-		const next = encoded
-			? (Array.from(content.querySelectorAll<HTMLElement>('[data-preview]')).find(
-					// Hidden elements (e.g. banner variants) must not take the marker.
-					(el) => el.dataset.preview === encoded && el.offsetParent !== null
-				) ?? null)
-			: null;
-		if (next === activeEl) return;
-		activeEl?.removeAttribute('data-active');
-		next?.setAttribute('data-active', '');
-		activeEl = next;
+		if (!encoded) return mark(null);
+		const visible = (el: HTMLElement) => el.isConnected && el.offsetParent !== null;
+		if (activeEl && visible(activeEl) && activeEl.dataset.preview === encoded) return;
+		mark(
+			Array.from(content.querySelectorAll<HTMLElement>('[data-preview]')).find(
+				// Hidden elements (e.g. banner variants) must not take the marker.
+				(el) => el.dataset.preview === encoded && visible(el)
+			) ?? null
+		);
 	};
 
 	// The visible text minus decoration such as ExtLink's aria-hidden `[` `](↗)`.
@@ -44,18 +52,18 @@
 
 	const setPreview = (el: Element | null | undefined) => {
 		if (!(el instanceof HTMLElement)) return;
+		// Same target from another element (a card and a ref to it): only the marker moves.
 		// Checked first so a pointermove over the current target costs no parsing or cloning.
-		if (editor.preview && el.dataset.preview === encodeTarget(editor.preview)) return;
+		if (editor.preview && el.dataset.preview === encodeTarget(editor.preview)) return mark(el);
 		const next = parseTarget(el.dataset.preview ?? null, labelOf(el));
 		if (!next) return;
 		editor.preview = next;
-		markActive();
+		mark(el);
 	};
 
 	const clearPreview = () => {
 		editor.preview = null;
-		activeEl?.removeAttribute('data-active');
-		activeEl = null;
+		mark(null);
 	};
 
 	// Chromium leaves counter() in later lines' ::after stale when earlier counted lines are removed;
