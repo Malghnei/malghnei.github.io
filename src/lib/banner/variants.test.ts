@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBanner, variantCss } from './variants';
+import { ART_SCALE, artWidth, parseBanner, variantCss } from './variants';
 
 describe('parseBanner', () => {
 	it('splits rows and trims trailing blank lines', () => {
@@ -53,5 +53,18 @@ describe('variantCss', () => {
 	it('always shows the fallback without any banner', () => {
 		expect(variantCss([])).toContain('.buffer-content .banner-fallback { display: block; }');
 		expect(variantCss([])).not.toContain('@container');
+	});
+});
+
+describe('artWidth', () => {
+	// JetBrains Mono's natural line box is 1.32em; scaled by ART_SCALE it fills one 1.65 body line.
+	it('scales the art so a row is exactly one body line tall', () => {
+		expect(ART_SCALE * 1.32).toBeCloseTo(1.65, 5);
+	});
+
+	it('converts art columns to buffer ch, rounding up so the art never overflows', () => {
+		expect(artWidth(41)).toBe(52);
+		expect(artWidth(40)).toBe(50);
+		expect(artWidth(0)).toBe(0);
 	});
 });

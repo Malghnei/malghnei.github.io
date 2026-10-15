@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { parseBanner, variantCss } from '$lib/banner/variants';
+	import { ART_SCALE, artWidth, parseBanner, variantCss } from '$lib/banner/variants';
 	import { typeIn } from '$lib/editor/typeIn';
 
 	let { name }: { name: string } = $props();
@@ -16,7 +16,7 @@
 		.filter((v) => v.rows.length > 0);
 
 	// Container-query widths come from the art itself, so the rules are built here, not in <style>.
-	const css = `<style>${variantCss(variants.map((v) => v.width))}</style>`;
+	const css = `<style>${variantCss(variants.map((v) => artWidth(v.width)))}</style>`;
 </script>
 
 <svelte:head>
@@ -28,8 +28,11 @@
      restarted the gutter numbers after the banner. The h1 only names the page for assistive tech. -->
 <h1 class="banner-h1 sr-only">{name}</h1>
 {#each variants as v, i (i)}
-	{#each v.rows as row, r (r)}<span class="line banner-row banner-art v{i}" aria-hidden="true"
-			>{row}{#if r === v.rows.length - 1}<span class="cursor">█</span>{/if}</span
+	{#each v.rows as row, r (r)}<span
+			class="line banner-row banner-art v{i}"
+			style:--art-scale={ART_SCALE}
+			aria-hidden="true"
+			><span class="art">{row}{#if r === v.rows.length - 1}<span class="cursor">█</span>{/if}</span></span
 		>{/each}
 {/each}
 <span class="line banner-row banner-fallback" aria-hidden="true"
@@ -37,12 +40,17 @@
 >
 
 <style>
+	/* The row keeps the body line height so its gutter number spaces like every other line;
+	   the art inside is scaled (ART_SCALE) so its natural 1.32 line box fills that row exactly. */
 	.banner-art {
-		/* Block art is drawn to fill the font's natural line box; the body's 1.65 would stripe it. */
-		line-height: normal;
-		min-height: 1lh;
 		white-space: pre;
 		color: var(--nord-8);
+	}
+
+	.art {
+		display: block;
+		font-size: calc(var(--art-scale) * 1em);
+		line-height: 1.32;
 	}
 
 	.banner-fallback::before {

@@ -5,6 +5,14 @@ const expandTabs = (row: string): string => {
 	return out;
 };
 
+// Block art needs the font's natural line box (1.32em for JetBrains Mono) to draw without gaps,
+// but a numbered line is 1.65em. Drawing the art 1.25x larger makes one art row exactly one
+// body line, so the gutter keeps the same spacing beside the banner as everywhere else.
+export const ART_SCALE = 1.25;
+
+// Art columns -> buffer ch (the container queries measure in the buffer's font).
+export const artWidth = (columns: number) => Math.ceil(columns * ART_SCALE);
+
 export type BannerVariant = { rows: string[]; width: number };
 
 // Width in characters, counting the cursor block that follows the last row.
