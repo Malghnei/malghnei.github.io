@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { filterProjects, type ProjectFilters } from '$lib/content/filter';
 	import { getTagChipStyle } from '$lib/tags/tagStyles';
@@ -38,6 +40,11 @@
 	);
 
 	const filtered = $derived(filterProjects(data.projects, { query, role, domain, tags: selectedTags }));
+
+	// Client-only: pages are prerendered, so search params are unavailable at build time.
+	onMount(() => {
+		selectedTags = page.url.searchParams.getAll('tag').filter((t) => allTags.includes(t));
+	});
 
 	const toggleTag = (tag: string) => {
 		selectedTags = selectedTags.includes(tag)
