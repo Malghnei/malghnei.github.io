@@ -81,6 +81,8 @@ a:hover {
 /* ---------- buffer ---------- */
 
 .buffer-content {
+	/* Lets the home banner pick the widest variant that fits, in CSS only. */
+	container: buffer / inline-size;
 	counter-reset: line;
 	box-sizing: border-box;
 	width: 100%;
@@ -97,13 +99,13 @@ a:hover {
 }
 
 /* Line numbering. Keep this selector in sync with LINE_SELECTOR in src/lib/editor/lines.ts */
-.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *, .banner-h1) {
 	counter-increment: line;
 	position: relative;
 	margin: 0;
 }
 
-.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *)::after {
+.buffer-content :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *, .banner-h1)::after {
 	content: counter(line);
 	position: absolute;
 	top: 0;
@@ -113,6 +115,13 @@ a:hover {
 	color: var(--nord-3);
 	font-weight: 400;
 	pointer-events: none;
+}
+
+/* The banner h1 isn't a line, but it touches the counter (by 0). With .buffer-content's style
+   containment (container-type), Chromium otherwise gives lines nested in a non-counting first
+   child a fresh counter, and numbering restarts at 1 after the banner. */
+.buffer-content .banner-h1 {
+	counter-increment: line 0;
 }
 
 .buffer-content .cursorline {
@@ -181,7 +190,7 @@ a:hover {
 	from { opacity: 0; }
 }
 
-.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *, .banner-h1) {
 	/* backwards, not both: a lingering forwards fill keeps every line its own stacking context,
 	   which traps a card's stretched title link under its later rows. */
 	animation: line-in 60ms ease-out backwards;
@@ -200,7 +209,7 @@ a:hover {
 
 @media (prefers-reduced-motion: reduce) {
 	/* Same selector as the reveal rule above (including :not) so specificity matches and this wins. */
-	.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *) {
+	.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *, .banner-h1) {
 		animation: none;
 	}
 
