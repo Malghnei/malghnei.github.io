@@ -45,6 +45,8 @@
 	}
 
 	.banner .line {
+		/* Block art is drawn to fill the font's natural line box; the body's 1.65 would stripe it. */
+		line-height: normal;
 		min-height: 1lh;
 		white-space: pre;
 		color: var(--nord-8);
