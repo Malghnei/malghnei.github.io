@@ -126,7 +126,7 @@
 		container-type: size;
 	}
 
-	@media (max-width: 1279px) {
+	@media (max-width: 1279px), (hover: none) {
 		.pane {
 			display: none;
 		}

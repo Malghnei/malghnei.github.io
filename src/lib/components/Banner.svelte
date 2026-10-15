@@ -26,12 +26,12 @@
 <h1 class="banner-h1">
 	<span class="sr-only">{name}</span>
 	{#each variants as v, i (i)}
-		<div class="banner v{i}" aria-hidden="true">
+		<span class="banner v{i}" aria-hidden="true">
 			{#each v.rows as row, r (r)}<span class="line">{row}{#if r === v.rows.length - 1}<span
 							class="cursor">█</span
 						>{/if}</span
 				>{/each}
-		</div>
+		</span>
 	{/each}
 	<span class="line banner-fallback" aria-hidden="true"
 		><span use:typeIn>{name}</span><span class="cursor">█</span></span

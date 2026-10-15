@@ -153,7 +153,7 @@
 	}
 
 	/* The preview pane is hidden here, so the buffer takes the whole width as before. */
-	@media (max-width: 1279px) {
+	@media (max-width: 1279px), (hover: none) {
 		.main {
 			flex: 1;
 		}

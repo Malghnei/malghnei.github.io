@@ -22,6 +22,12 @@ describe('parseBanner', () => {
 		expect(parseBanner('ab\nabcdef\n').width).toBe(7);
 	});
 
+	it('expands tabs to tab stops of 8', () => {
+		const v = parseBanner('\tab\na\tb\n');
+		expect(v.rows).toEqual(['        ab', 'a       b']);
+		expect(v.width).toBe(10);
+	});
+
 	it('returns no rows for an empty file', () => {
 		expect(parseBanner('\n \n')).toEqual({ rows: [], width: 0 });
 	});
