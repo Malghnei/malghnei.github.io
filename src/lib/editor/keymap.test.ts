@@ -48,6 +48,11 @@ describe('resolveKey', () => {
 		expect(resolveKey('', key('Escape'))).toEqual(action({ type: 'closeHelp' }));
 	});
 
+	it('opens the preview target with Enter, but not while typing', () => {
+		expect(resolveKey('', key('Enter'))).toEqual(action({ type: 'open' }));
+		expect(resolveKey('', key('Enter', { inEditable: true }))).toEqual(passthrough);
+	});
+
 	it('ignores keys while typing', () => {
 		expect(resolveKey('', key('j', { inEditable: true }))).toEqual(passthrough);
 		expect(resolveKey('', key(' ', { inEditable: true }))).toEqual(passthrough);

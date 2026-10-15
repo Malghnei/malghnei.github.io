@@ -6,6 +6,7 @@
 		['gg / G', 'top / bottom'],
 		['1 2 3', 'home / about / projects'],
 		['␣ h a p', 'home / about / projects'],
+		['⏎', 'open preview'],
 		['ctrl+/', 'toggle terminal'],
 		['?', 'toggle this help'],
 		['esc', 'close']

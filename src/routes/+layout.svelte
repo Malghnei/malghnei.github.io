@@ -51,13 +51,21 @@
 			case 'closeHelp':
 				editor.helpOpen = false;
 				return;
+			case 'open': {
+				const target = editor.preview;
+				if (!target) return;
+				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
+				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
+				window.open(target.href, '_blank', 'noreferrer');
+				return;
+			}
 		}
 	};
 
 	const onkeydown = (event: KeyboardEvent) => {
 		if (event.defaultPrevented) return;
-		// Space on a focused button or link keeps its native meaning.
-		if (event.key === ' ' && event.target instanceof Element && event.target.closest('button, a, summary')) return;
+		// Space or Enter on a focused button or link keeps its native meaning.
+		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
 
 		const result = resolveKey(pending, {
 			key: event.key,
