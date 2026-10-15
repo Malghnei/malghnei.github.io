@@ -1,4 +1,4 @@
-import type { ExperienceEntry } from '$lib/types';
+import type { ExperienceEntry, LinkInfo } from '$lib/types';
 
 export const siteContent = {
 	name: 'Malik Alghneimin',
@@ -24,7 +24,7 @@ export const siteContent = {
 		items: [
 			{ label: 'github', href: 'https://github.com/Malghnei' },
 			{ label: 'linkedin', href: 'https://linkedin.com/in/malik-alghneimin' }
-		],
+		] as LinkInfo[],
 		contactEmail: 'malikalghneimin [@] gmail.com'
 	},
 	misc: {
