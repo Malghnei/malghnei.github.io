@@ -1,10 +1,12 @@
 import { siteContent } from '$lib/data/site';
+import type { PreviewTarget } from '$lib/types';
 
 export type TerminalStatus = 'closed' | 'open' | 'minimized';
 
 export const editor = $state({
 	cursorLine: 1,
 	helpOpen: false,
+	preview: null as PreviewTarget | null,
 	terminal: { status: 'closed' as TerminalStatus, maximized: false }
 });
 

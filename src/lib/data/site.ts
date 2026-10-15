@@ -1,10 +1,10 @@
-import type { ExperienceEntry } from '$lib/types';
+import type { ExperienceEntry, LinkInfo } from '$lib/types';
 
 export const siteContent = {
 	name: 'Malik Alghneimin',
 	role: 'Software Developer · CS @ Western University',
-	heroDescription:
-		'Building Kata, a martial arts training platform. Open to 2027 internships.',
+	status: 'Open to 2027 internships',
+	heroDescription: 'Building Kata, a martial arts training platform.',
 	aboutNarrative: [
 		"I'm Malik, a third-year Computer Science student at Western University. I'm most interested in cybersecurity, machine learning, and embedded systems.",
 		"I handle software and electronics for the micro-class team at Western Aero Design. Outside of class, I'm building Kata, a platform that helps people train martial arts on their own.",
@@ -24,7 +24,7 @@ export const siteContent = {
 		items: [
 			{ label: 'github', href: 'https://github.com/Malghnei' },
 			{ label: 'linkedin', href: 'https://linkedin.com/in/malik-alghneimin' }
-		],
+		] as LinkInfo[],
 		contactEmail: 'malikalghneimin [@] gmail.com'
 	},
 	misc: {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as emoji from 'node-emoji';
+	import Prose from '$lib/components/refs/Prose.svelte';
 	import Blank from '$lib/components/editor/Blank.svelte';
 	import { experienceTimeline, siteContent } from '$lib/data/site';
 	import type { ExperienceEntry } from '$lib/types';
@@ -17,7 +18,7 @@
 
 <h1>about</h1>
 {#each siteContent.aboutNarrative as paragraph}
-	<p>{paragraph}</p>
+	<p><Prose text={paragraph} /></p>
 {/each}
 <Blank />
 <h2>experience</h2>

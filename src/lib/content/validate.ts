@@ -1,3 +1,4 @@
+import { getTagCategory } from '$lib/tags/categories';
 import type { ProjectDomain, ProjectFrontmatter, ProjectRole } from '$lib/types';
 
 export const PROJECT_ROLES: readonly ProjectRole[] = ['solo', 'contribution'];
@@ -24,6 +25,17 @@ export const validateProjectMetadata = (
 
 	requireOneOf('role', PROJECT_ROLES);
 	requireOneOf('domain', PROJECT_DOMAINS);
+
+	for (const tag of (metadata.techStack as string[] | undefined) ?? []) {
+		if (!getTagCategory(tag)) {
+			throw new Error(`${file}: unknown tag "${tag}" (add it to src/lib/tags/categories.ts)`);
+		}
+	}
+
+	const preview = metadata.preview;
+	if (preview !== undefined && (typeof preview !== 'string' || !preview.startsWith('/'))) {
+		throw new Error(`${file}: invalid preview "${String(preview)}"`);
+	}
 
 	return metadata as ProjectMetadata;
 };

@@ -5,6 +5,7 @@
 	import favicon from '$lib/assets/favicon.ico';
 	import Buffer from '$lib/components/editor/Buffer.svelte';
 	import Navbar from '$lib/components/editor/Navbar.svelte';
+	import PreviewPane from '$lib/components/preview/PreviewPane.svelte';
 	import StatusBar from '$lib/components/editor/StatusBar.svelte';
 	import TerminalWindow from '$lib/components/terminal/TerminalWindow.svelte';
 	import { goto } from '$app/navigation';
@@ -17,8 +18,19 @@
 		type KeyAction
 	} from '$lib/editor/keymap';
 	import { editor, toggleTerminal } from '$lib/editor/state.svelte';
+	import { siteContent } from '$lib/data/site';
+	import { setRefsContext } from '$lib/refs/context';
+	import { buildDictionary } from '$lib/refs/tokenize';
 
 	let { children, data } = $props();
+
+	// A getter, so readers always see the dictionary for the current data.
+	const dict = $derived(buildDictionary(data.projects));
+	setRefsContext({
+		get dict() {
+			return dict;
+		}
+	});
 
 	let buffer = $state<ReturnType<typeof Buffer> | undefined>();
 	let pending = '';
@@ -46,13 +58,23 @@
 			case 'closeHelp':
 				editor.helpOpen = false;
 				return;
+			case 'open': {
+				const target = editor.preview;
+				if (!target) return;
+				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
+				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
+				// window.open on mailto: can leave a blank tab behind.
+				if (target.href.startsWith('mailto:')) location.href = target.href;
+				else window.open(target.href, '_blank', 'noreferrer');
+				return;
+			}
 		}
 	};
 
 	const onkeydown = (event: KeyboardEvent) => {
 		if (event.defaultPrevented) return;
-		// Space on a focused button or link keeps its native meaning.
-		if (event.key === ' ' && event.target instanceof Element && event.target.closest('button, a, summary')) return;
+		// Space or Enter on a focused button or link keeps its native meaning.
+		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
 
 		const result = resolveKey(pending, {
 			key: event.key,
@@ -93,9 +115,12 @@
 <div class="app">
 	<Navbar />
 	<div class="workspace">
-		<Buffer bind:this={buffer}>
-			{@render children()}
-		</Buffer>
+		<div class="main">
+			<Buffer bind:this={buffer}>
+				{@render children()}
+			</Buffer>
+		</div>
+		<PreviewPane projects={data.projects} links={siteContent.links.items} />
 		<TerminalWindow projects={data.projects} />
 		<WhichKey />
 	</div>
@@ -115,6 +140,22 @@
 		position: relative;
 		min-height: 0;
 		display: flex;
+		flex-direction: row;
+	}
+
+	/* Shrinkable: between 1280px and ~1376px the buffer's full width plus the pane's 40ch minimum
+	   don't fit, and the buffer gives up the difference rather than overflowing the window. */
+	.main {
+		flex: 0 1 calc(80ch + var(--gutter) + 1ch);
+		min-width: 0;
+		display: flex;
 		flex-direction: column;
+	}
+
+	/* The preview pane is hidden here, so the buffer takes the whole width as before. */
+	@media (max-width: 1279px), (hover: none) {
+		.main {
+			flex: 1;
+		}
 	}
 </style>

@@ -9,7 +9,8 @@ export type KeyAction =
 	| { type: 'goto'; path: NavPath }
 	| { type: 'toggleTerminal' }
 	| { type: 'toggleHelp' }
-	| { type: 'closeHelp' };
+	| { type: 'closeHelp' }
+	| { type: 'open' };
 
 export type KeyInput = {
 	key: string;
@@ -73,6 +74,8 @@ export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 			return { kind: 'pending', pending: LEADER };
 		case '?':
 			return action({ type: 'toggleHelp' });
+		case 'Enter':
+			return action({ type: 'open' });
 		case 'Escape':
 			return action({ type: 'closeHelp' });
 	}
