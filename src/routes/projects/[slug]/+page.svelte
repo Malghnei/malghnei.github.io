@@ -53,8 +53,9 @@
 </p>
 
 <style>
+	/* Decorative, but readable: nord-3 alone is 1.69:1; this mix is about 3.4:1. */
 	.fm {
-		color: var(--nord-3);
+		color: color-mix(in srgb, var(--nord-3) 65%, var(--nord-4));
 	}
 
 	.fm-key {

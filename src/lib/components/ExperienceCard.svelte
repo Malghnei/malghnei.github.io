@@ -10,7 +10,7 @@
      The meta gets its own row: some titles fill most of the 80ch edge on their own. -->
 <article class="card" data-preview={encodeTarget({ kind: 'experience', id: experienceId(entry) })}>
 	<span class="line edge">
-		<span class="label title">{entry.title} @ {entry.organization}</span>
+		<h3 class="label title">{entry.title} @ {entry.organization}</h3>
 	</span>
 	<span class="line row meta"
 		><span style={`color:${CATEGORY_COLOR[entry.category]}`}>{entry.category.toLowerCase()}</span> · {formatPeriod(
@@ -73,7 +73,15 @@
 		background-color: var(--row-bg, var(--nord-0));
 	}
 
+	/* A real heading so screen readers can jump between roles; it sits inside a numbered .line,
+	   so it takes no number of its own, and it drops the markdown ### prefix headings get. */
+	.title::before {
+		content: none;
+	}
+
 	.title {
+		font-size: 1em;
+		margin: 0;
 		margin-left: 1ch;
 		margin-right: 1ch; /* leaves the top-right corner of the rule showing when the title wraps */
 		min-width: 0;

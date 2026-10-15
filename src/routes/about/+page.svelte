@@ -14,12 +14,12 @@
 	<p><Prose text={paragraph} /></p>
 {/each}
 <Blank />
-<h2>experience<span class="summary">{'  -- '}{count(experienceTimeline.length, 'role')}</span></h2>
+<h2>experience<span class="summary"><span aria-hidden="true">{'  -- '}</span>{count(experienceTimeline.length, 'role')}</span></h2>
 {#each experienceTimeline as item (item.title + item.organization)}
 	<ExperienceCard entry={item} />
 {/each}
 <Blank />
-<h2>setup<span class="summary">{'  -- '}{count(siteContent.setup.items.length, 'tool')}</span></h2>
+<h2>setup<span class="summary"><span aria-hidden="true">{'  -- '}</span>{count(siteContent.setup.items.length, 'tool')}</span></h2>
 {#each siteContent.setup.items as item (item.label)}
 	<p class="setup-row">
 		<span class="setup-key">{item.label.toLowerCase()}</span>
