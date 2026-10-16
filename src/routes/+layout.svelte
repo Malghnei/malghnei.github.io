@@ -39,18 +39,13 @@
 	const runAction = (action: KeyAction) => {
 		switch (action.type) {
 			case 'motion':
-				if (action.motion === 'j' || action.motion === 'k') {
-					return buffer?.moveCursor((action.count ?? 1) * (action.motion === 'j' ? 1 : -1));
-				}
-				if (action.motion === 'gg') return buffer?.scrollToEdge('top');
-				if (action.motion === 'G') return buffer?.scrollToEdge('bottom');
-				return;
+				return buffer?.motion(action.motion, action.count);
 			case 'visual':
+				return buffer?.startVisual(action.mode);
 			case 'yank':
-				return;
+				return buffer?.yank();
 			case 'exitVisual':
-				editor.visual = null;
-				return;
+				return buffer?.exitVisual();
 			case 'pageDown':
 				return buffer?.pageDown();
 			case 'pageUp':

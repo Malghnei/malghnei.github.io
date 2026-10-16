@@ -48,6 +48,8 @@
 	--gutter: 6ch;
 	/* Solid, so card labels can paint over their border line on the cursor line. */
 	--cursorline-bg: #353b49;
+	/* nvim Nord's Visual colour. */
+	--visual-bg: var(--nord-2);
 }
 
 @media (max-width: 639px) {
@@ -145,6 +147,38 @@ a:hover {
 
 .buffer-content .cursorline::after {
 	color: var(--nord-4);
+}
+
+/* Block cursor, visual selection and yank flash: CSS custom highlights set by src/lib/editor/paint.ts. */
+::highlight(cursor) {
+	background-color: var(--nord-4);
+	color: var(--nord-0);
+}
+
+::highlight(visual) {
+	background-color: var(--visual-bg);
+}
+
+::highlight(yank) {
+	background-color: rgb(136 192 208 / 0.35);
+}
+
+/* A line with no text (hr, blank) can't hold a highlight, so its cursor cell is drawn here. */
+.buffer-content .cursor-cell::before {
+	content: '';
+	display: inline-block;
+	width: 1ch;
+	height: 1lh;
+	vertical-align: top;
+	background: var(--nord-4);
+}
+
+/* VISUAL LINE rows fill like the cursorline, gutter included.
+   !important: a card paints its own row fill while the cursor is on it. */
+.buffer-content .visual-line {
+	background-color: var(--visual-bg) !important;
+	box-shadow: calc(-1 * var(--gutter)) 0 0 var(--visual-bg);
+	--row-bg: var(--visual-bg);
 }
 
 /* Markdown look */
