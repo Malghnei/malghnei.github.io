@@ -15,7 +15,7 @@
 	} from '$lib/editor/motions';
 	import { clearPaint, flashYank, paintCursor, paintSelection, supported as paintSupported } from '$lib/editor/paint';
 	import { editor } from '$lib/editor/state.svelte';
-	import { mapLine, rangeAt, type LineMap } from '$lib/editor/textmap';
+	import { colAtPoint, mapLine, rangeAt, type LineMap } from '$lib/editor/textmap';
 	import { encodeTarget, parseTarget } from '$lib/preview/target';
 
 	let { children }: { children: Snippet } = $props();
@@ -259,9 +259,55 @@
 		return -1;
 	};
 
+	// The character under the pointer; off the text, the row keeps the remembered column.
+	const posAt = (x: number, y: number): Pos | null => {
+		const line = lineAt(y);
+		if (line < 0) return null;
+		return { line, col: colAtPoint(maps[line], x, y) ?? want };
+	};
+
+	// Movement under this many px is still a click.
+	const DRAG_THRESHOLD_PX = 4;
+	let drag: { x: number; y: number; anchor: Pos; active: boolean } | null = null;
+	// The click that ends a drag must not follow a link the drag started on.
+	let suppressClick = false;
+
+	// Capture phase, so a drag that ended on a link is stopped before the link or the router sees it.
+	const onclickcapture = (event: MouseEvent) => {
+		if (!suppressClick) return;
+		suppressClick = false;
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
 	const onclick = (event: MouseEvent) => {
-		const index = lineAt(event.clientY);
-		if (index >= 0) setCursor(index);
+		// Links, buttons and form controls keep their own click.
+		if ((event.target as Element).closest('a, button, input, select, textarea, label')) return;
+		const at = posAt(event.clientX, event.clientY);
+		if (!at) return;
+		editor.visual = null;
+		want = at.col;
+		setPos(at);
+	};
+
+	const onpointerdown = (event: PointerEvent) => {
+		suppressClick = false;
+		if (event.pointerType !== 'mouse' || event.button !== 0) return;
+		const at = posAt(event.clientX, event.clientY);
+		drag = at && { x: event.clientX, y: event.clientY, anchor: at, active: false };
+	};
+
+	const endDrag = () => {
+		if (drag?.active) {
+			content.classList.remove('dragging');
+			suppressClick = true;
+		}
+		drag = null;
+	};
+
+	// Links are draggable natively, which would swallow the pointer moves of a selection drag.
+	const ondragstart = (event: DragEvent) => {
+		if (drag) event.preventDefault();
 	};
 
 	// Like nvim with mouse=a: the cursor follows the mouse, but hovering never scrolls.
@@ -269,7 +315,8 @@
 		if (!target || !content.contains(target)) return false;
 		const index = lineAt(y);
 		// Checked against the DOM: filtering can remove the cursor's line and leave cursorLine stale.
-		if (index >= 0 && !lines[index].classList.contains('cursorline')) setCursor(index);
+		// In visual, hover leaves the row alone so the selection doesn't follow a wandering mouse.
+		if (index >= 0 && !editor.visual && !lines[index].classList.contains('cursorline')) setCursor(index);
 		setPreview(target.closest('[data-preview]'));
 		return index >= 0;
 	};
@@ -277,6 +324,21 @@
 	const onpointermove = (event: PointerEvent) => {
 		if (event.pointerType !== 'mouse') return;
 		lastPointer = { x: event.clientX, y: event.clientY };
+		if (drag && event.buttons & 1) {
+			if (!drag.active) {
+				if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD_PX) return;
+				drag.active = true;
+				content.classList.add('dragging');
+				window.getSelection()?.removeAllRanges();
+				editor.visual = { mode: 'char', anchor: drag.anchor };
+			}
+			const at = posAt(event.clientX, event.clientY);
+			if (at) {
+				want = at.col;
+				setPos(at);
+			}
+			return;
+		}
 		pointAt(event.target as Element, event.clientY);
 	};
 
@@ -334,6 +396,8 @@
 	});
 </script>
 
+<svelte:window onpointerup={endDrag} onpointercancel={endDrag} />
+
 <!-- tabindex: lets keyboard users focus the scroll area so arrows/PageDown work natively -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
@@ -351,8 +415,11 @@
 		class="buffer-content"
 		bind:this={content}
 		{onclick}
+		{onclickcapture}
+		{onpointerdown}
 		{onpointermove}
 		{onpointerleave}
+		{ondragstart}
 	>
 		{@render children()}
 	</div>

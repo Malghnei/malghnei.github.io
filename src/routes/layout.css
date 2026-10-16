@@ -181,6 +181,11 @@ a:hover {
 	--row-bg: var(--visual-bg);
 }
 
+/* While a mouse drag paints the visual selection, the browser's own selection stays out of it. */
+.buffer-content.dragging {
+	user-select: none;
+}
+
 /* Markdown look */
 .buffer-content h1::before { content: '# '; color: var(--nord-3); }
 .buffer-content h2::before { content: '## '; color: var(--nord-3); }
