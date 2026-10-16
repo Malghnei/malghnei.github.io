@@ -45,6 +45,12 @@ describe('resolveKey: counts', () => {
 		expect(resolveKey('5', key('G'))).toEqual(motion('G', 5));
 	});
 
+	it('keeps a pending count or g across a lone modifier keydown, as typing G or $ sends Shift first', () => {
+		expect(resolveKey('5', key('Shift'))).toEqual(pending('5'));
+		expect(resolveKey('3g', key('Shift'))).toEqual(pending('3g'));
+		expect(resolveKey('', key('Shift'))).toEqual(passthrough);
+	});
+
 	it('no longer navigates pages with digits', () => {
 		for (const digit of ['1', '2', '3']) expect(resolveKey('', key(digit))).toEqual(pending(digit));
 	});

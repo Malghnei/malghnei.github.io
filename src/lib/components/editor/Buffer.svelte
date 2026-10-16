@@ -368,7 +368,8 @@
 
 	const onpointerdown = (event: PointerEvent) => {
 		suppressClick = false;
-		if (event.pointerType !== 'mouse' || event.button !== 0) return;
+		// Where the selection can't be painted, the browser's own selection stays in charge.
+		if (!paintSupported || event.pointerType !== 'mouse' || event.button !== 0) return;
 		const at = posAt(event.clientX, event.clientY);
 		drag = at && { x: event.clientX, y: event.clientY, anchor: at, active: false };
 	};

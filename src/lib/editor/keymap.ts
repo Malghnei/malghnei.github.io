@@ -37,6 +37,7 @@ export const SEQUENCE_TIMEOUT_MS = 800;
 const LEADER = ' ';
 const LEADER_PAGES: Record<string, NavPath> = { h: '/', a: '/about/', p: '/projects/' };
 const MOTION_KEYS = new Set<string>(['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'G']);
+const MODIFIER_KEYS = new Set<string>(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'AltGraph']);
 
 const action = (a: KeyAction): KeyResult => ({ kind: 'action', action: a });
 const motion = (m: Motion, count: number | null = null): KeyResult =>
@@ -58,6 +59,8 @@ export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 	if (input.key === '/' && input.ctrlKey && !input.altKey && !input.metaKey) {
 		return action({ type: 'toggleTerminal' });
 	}
+	// Typing G or $ sends a lone Shift keydown first; it must not drop a pending count or g.
+	if (MODIFIER_KEYS.has(input.key)) return pending ? { kind: 'pending', pending } : passthrough;
 	if (input.ctrlKey || input.altKey || input.metaKey || input.inEditable) return passthrough;
 
 	const nativeScroll = input.onBody ? NATIVE_SCROLL_KEYS[input.key] : undefined;
