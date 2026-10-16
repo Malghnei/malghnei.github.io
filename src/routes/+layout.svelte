@@ -38,12 +38,19 @@
 
 	const runAction = (action: KeyAction) => {
 		switch (action.type) {
-			case 'scroll':
-				return buffer?.moveCursor(action.lines);
-			case 'top':
-				return buffer?.scrollToEdge('top');
-			case 'bottom':
-				return buffer?.scrollToEdge('bottom');
+			case 'motion':
+				if (action.motion === 'j' || action.motion === 'k') {
+					return buffer?.moveCursor((action.count ?? 1) * (action.motion === 'j' ? 1 : -1));
+				}
+				if (action.motion === 'gg') return buffer?.scrollToEdge('top');
+				if (action.motion === 'G') return buffer?.scrollToEdge('bottom');
+				return;
+			case 'visual':
+			case 'yank':
+				return;
+			case 'exitVisual':
+				editor.visual = null;
+				return;
 			case 'pageDown':
 				return buffer?.pageDown();
 			case 'pageUp':
@@ -77,6 +84,7 @@
 		if (event.defaultPrevented) return;
 		// Space or Enter on a focused button or link keeps its native meaning.
 		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
+		editor.message = null;
 
 		const result = resolveKey(pending, {
 			key: event.key,
@@ -84,7 +92,8 @@
 			altKey: event.altKey,
 			metaKey: event.metaKey,
 			inEditable: isEditableTarget(event.target),
-			onBody: event.target === document.body || event.target === document.documentElement
+			onBody: event.target === document.body || event.target === document.documentElement,
+			visual: editor.visual !== null
 		});
 		pending = '';
 		clearTimeout(pendingTimer);

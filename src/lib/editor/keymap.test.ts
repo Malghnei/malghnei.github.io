@@ -5,35 +5,77 @@ const key = (k: string, mods: Partial<KeyInput> = {}): KeyInput => ({
 	key: k, ctrlKey: false, altKey: false, metaKey: false, inEditable: false, ...mods
 });
 const action = (a: object) => ({ kind: 'action', action: a });
+const motion = (m: string, count: number | null = null) => action({ type: 'motion', motion: m, count });
+const pending = (p: string) => ({ kind: 'pending', pending: p });
 const passthrough = { kind: 'passthrough' };
 
-describe('resolveKey', () => {
-	it('scrolls 3 lines with j and k', () => {
-		expect(resolveKey('', key('j'))).toEqual(action({ type: 'scroll', lines: 3 }));
-		expect(resolveKey('', key('k'))).toEqual(action({ type: 'scroll', lines: -3 }));
-	});
-
-	it('jumps to the bottom with G', () => {
-		expect(resolveKey('', key('G'))).toEqual(action({ type: 'bottom' }));
+describe('resolveKey: motions', () => {
+	it('maps h j k l w b e 0 $ G to motions without a count', () => {
+		for (const m of ['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'G']) {
+			expect(resolveKey('', key(m))).toEqual(motion(m));
+		}
 	});
 
 	it('jumps to the top with gg', () => {
-		expect(resolveKey('', key('g'))).toEqual({ kind: 'pending', pending: 'g' });
-		expect(resolveKey('g', key('g'))).toEqual(action({ type: 'top' }));
+		expect(resolveKey('', key('g'))).toEqual(pending('g'));
+		expect(resolveKey('g', key('g'))).toEqual(motion('gg'));
 	});
 
 	it('drops a pending g when another key follows', () => {
 		expect(resolveKey('g', key('x'))).toEqual(passthrough);
 	});
+});
 
-	it('goes to pages with 1, 2, 3', () => {
-		expect(resolveKey('', key('1'))).toEqual(action({ type: 'goto', path: '/' }));
-		expect(resolveKey('', key('2'))).toEqual(action({ type: 'goto', path: '/about/' }));
-		expect(resolveKey('', key('3'))).toEqual(action({ type: 'goto', path: '/projects/' }));
+describe('resolveKey: counts', () => {
+	it('builds a count from digits', () => {
+		expect(resolveKey('', key('1'))).toEqual(pending('1'));
+		expect(resolveKey('1', key('2'))).toEqual(pending('12'));
+		expect(resolveKey('12', key('j'))).toEqual(motion('j', 12));
 	});
 
+	it('treats 0 as a digit only inside a count', () => {
+		expect(resolveKey('', key('0'))).toEqual(motion('0'));
+		expect(resolveKey('1', key('0'))).toEqual(pending('10'));
+		expect(resolveKey('10', key('w'))).toEqual(motion('w', 10));
+	});
+
+	it('passes a count to gg and G', () => {
+		expect(resolveKey('5', key('g'))).toEqual(pending('5g'));
+		expect(resolveKey('5g', key('g'))).toEqual(motion('gg', 5));
+		expect(resolveKey('5', key('G'))).toEqual(motion('G', 5));
+	});
+
+	it('no longer navigates pages with digits', () => {
+		for (const digit of ['1', '2', '3']) expect(resolveKey('', key(digit))).toEqual(pending(digit));
+	});
+
+	it('drops the count when a non-motion key follows', () => {
+		expect(resolveKey('5', key('?'))).toEqual(action({ type: 'toggleHelp' }));
+		expect(resolveKey('5', key(' '))).toEqual(pending(' '));
+		expect(resolveKey('12', key('x'))).toEqual(passthrough);
+	});
+});
+
+describe('resolveKey: visual mode', () => {
+	it('enters charwise and linewise visual', () => {
+		expect(resolveKey('', key('v'))).toEqual(action({ type: 'visual', mode: 'char' }));
+		expect(resolveKey('', key('V'))).toEqual(action({ type: 'visual', mode: 'line' }));
+	});
+
+	it('yanks only in visual', () => {
+		expect(resolveKey('', key('y', { visual: true }))).toEqual(action({ type: 'yank' }));
+		expect(resolveKey('', key('y'))).toEqual(passthrough);
+	});
+
+	it('Escape leaves visual first, otherwise closes help', () => {
+		expect(resolveKey('', key('Escape', { visual: true }))).toEqual(action({ type: 'exitVisual' }));
+		expect(resolveKey('', key('Escape'))).toEqual(action({ type: 'closeHelp' }));
+	});
+});
+
+describe('resolveKey: everything else', () => {
 	it('goes to pages with the space leader', () => {
-		expect(resolveKey('', key(' '))).toEqual({ kind: 'pending', pending: ' ' });
+		expect(resolveKey('', key(' '))).toEqual(pending(' '));
 		expect(resolveKey(' ', key('h'))).toEqual(action({ type: 'goto', path: '/' }));
 		expect(resolveKey(' ', key('a'))).toEqual(action({ type: 'goto', path: '/about/' }));
 		expect(resolveKey(' ', key('p'))).toEqual(action({ type: 'goto', path: '/projects/' }));
@@ -43,9 +85,8 @@ describe('resolveKey', () => {
 		expect(resolveKey(' ', key('z'))).toEqual(passthrough);
 	});
 
-	it('toggles help with ? and closes it with Escape', () => {
+	it('toggles help with ?', () => {
 		expect(resolveKey('', key('?'))).toEqual(action({ type: 'toggleHelp' }));
-		expect(resolveKey('', key('Escape'))).toEqual(action({ type: 'closeHelp' }));
 	});
 
 	it('opens the preview target with Enter, but not while typing', () => {
@@ -57,6 +98,7 @@ describe('resolveKey', () => {
 		expect(resolveKey('', key('j', { inEditable: true }))).toEqual(passthrough);
 		expect(resolveKey('', key(' ', { inEditable: true }))).toEqual(passthrough);
 		expect(resolveKey('', key('1', { inEditable: true }))).toEqual(passthrough);
+		expect(resolveKey('', key('v', { inEditable: true }))).toEqual(passthrough);
 	});
 
 	it('toggles the terminal with ctrl+/ even while typing', () => {
@@ -76,19 +118,21 @@ describe('resolveKey', () => {
 	});
 });
 
-describe('native scroll keys with nothing focused', () => {
+describe('native keys with nothing focused', () => {
 	const onBody = { onBody: true };
 
-	it('drives the buffer, since the page itself never scrolls', () => {
+	it('drive the cursor, since the page itself never scrolls', () => {
 		expect(resolveKey('', key('PageDown', onBody))).toEqual(action({ type: 'pageDown' }));
 		expect(resolveKey('', key('PageUp', onBody))).toEqual(action({ type: 'pageUp' }));
-		expect(resolveKey('', key('End', onBody))).toEqual(action({ type: 'bottom' }));
-		expect(resolveKey('', key('Home', onBody))).toEqual(action({ type: 'top' }));
-		expect(resolveKey('', key('ArrowDown', onBody))).toEqual(action({ type: 'scroll', lines: 1 }));
-		expect(resolveKey('', key('ArrowUp', onBody))).toEqual(action({ type: 'scroll', lines: -1 }));
+		expect(resolveKey('', key('End', onBody))).toEqual(motion('G'));
+		expect(resolveKey('', key('Home', onBody))).toEqual(motion('gg'));
+		expect(resolveKey('', key('ArrowDown', onBody))).toEqual(motion('j'));
+		expect(resolveKey('', key('ArrowUp', onBody))).toEqual(motion('k'));
+		expect(resolveKey('', key('ArrowLeft', onBody))).toEqual(motion('h'));
+		expect(resolveKey('', key('ArrowRight', onBody))).toEqual(motion('l'));
 	});
 
-	it('leaves them native when something else has focus', () => {
+	it('stay native when something else has focus', () => {
 		expect(resolveKey('', key('PageDown'))).toEqual(passthrough);
 		expect(resolveKey('', key('ArrowDown'))).toEqual(passthrough);
 		expect(resolveKey('', key('End', { onBody: true, inEditable: true }))).toEqual(passthrough);
@@ -100,7 +144,9 @@ describe('resolveTimeout', () => {
 		expect(resolveTimeout(' ')).toEqual({ type: 'pageDown' });
 	});
 
-	it('does nothing when g times out', () => {
+	it('drops a pending g or count', () => {
 		expect(resolveTimeout('g')).toBeNull();
+		expect(resolveTimeout('3')).toBeNull();
+		expect(resolveTimeout('3g')).toBeNull();
 	});
 });

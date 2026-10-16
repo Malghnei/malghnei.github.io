@@ -1,12 +1,15 @@
+import type { Motion, VisualMode } from './motions';
+
 export type NavPath = '/' | '/about/' | '/projects/';
 
 export type KeyAction =
-	| { type: 'scroll'; lines: number }
-	| { type: 'top' }
-	| { type: 'bottom' }
+	| { type: 'motion'; motion: Motion; count: number | null }
 	| { type: 'pageDown' }
 	| { type: 'pageUp' }
 	| { type: 'goto'; path: NavPath }
+	| { type: 'visual'; mode: VisualMode }
+	| { type: 'yank' }
+	| { type: 'exitVisual' }
 	| { type: 'toggleTerminal' }
 	| { type: 'toggleHelp' }
 	| { type: 'closeHelp' }
@@ -20,6 +23,8 @@ export type KeyInput = {
 	inEditable: boolean;
 	/** Nothing is focused, so the browser's own scroll keys would do nothing (the page never scrolls). */
 	onBody?: boolean;
+	/** A visual selection is active. */
+	visual?: boolean;
 };
 
 export type KeyResult =
@@ -29,22 +34,25 @@ export type KeyResult =
 
 export const SEQUENCE_TIMEOUT_MS = 800;
 
-const SCROLL_LINES = 3;
 const LEADER = ' ';
 const LEADER_PAGES: Record<string, NavPath> = { h: '/', a: '/about/', p: '/projects/' };
-const NUMBER_PAGES: Record<string, NavPath> = { '1': '/', '2': '/about/', '3': '/projects/' };
-
-const NATIVE_SCROLL_KEYS: Record<string, KeyAction> = {
-	PageDown: { type: 'pageDown' },
-	PageUp: { type: 'pageUp' },
-	Home: { type: 'top' },
-	End: { type: 'bottom' },
-	ArrowDown: { type: 'scroll', lines: 1 },
-	ArrowUp: { type: 'scroll', lines: -1 }
-};
+const MOTION_KEYS = new Set<string>(['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'G']);
 
 const action = (a: KeyAction): KeyResult => ({ kind: 'action', action: a });
+const motion = (m: Motion, count: number | null = null): KeyResult =>
+	action({ type: 'motion', motion: m, count });
 const passthrough: KeyResult = { kind: 'passthrough' };
+
+const NATIVE_SCROLL_KEYS: Record<string, KeyResult> = {
+	PageDown: action({ type: 'pageDown' }),
+	PageUp: action({ type: 'pageUp' }),
+	Home: motion('gg'),
+	End: motion('G'),
+	ArrowDown: motion('j'),
+	ArrowUp: motion('k'),
+	ArrowLeft: motion('h'),
+	ArrowRight: motion('l')
+};
 
 export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 	if (input.key === '/' && input.ctrlKey && !input.altKey && !input.metaKey) {
@@ -53,38 +61,45 @@ export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 	if (input.ctrlKey || input.altKey || input.metaKey || input.inEditable) return passthrough;
 
 	const nativeScroll = input.onBody ? NATIVE_SCROLL_KEYS[input.key] : undefined;
-	if (nativeScroll) return action(nativeScroll);
+	if (nativeScroll) return nativeScroll;
 
-	if (pending === 'g') return input.key === 'g' ? action({ type: 'top' }) : passthrough;
 	if (pending === LEADER) {
 		const path = LEADER_PAGES[input.key];
 		return path ? action({ type: 'goto', path }) : passthrough;
 	}
 
+	// Otherwise pending is an optional count then an optional g: '', '12', 'g', '12g'.
+	const [, digits = '', g = ''] = /^(\d*)(g?)$/.exec(pending) ?? [];
+	const count = digits ? Number(digits) : null;
+	if (g) return input.key === 'g' ? motion('gg', count) : passthrough;
+	if (/^[1-9]$/.test(input.key) || (input.key === '0' && digits)) {
+		return { kind: 'pending', pending: digits + input.key };
+	}
+	if (MOTION_KEYS.has(input.key)) return motion(input.key as Motion, count);
+
+	// Any other key drops the count, as nvim does for keys that don't take one.
 	switch (input.key) {
-		case 'j':
-			return action({ type: 'scroll', lines: SCROLL_LINES });
-		case 'k':
-			return action({ type: 'scroll', lines: -SCROLL_LINES });
-		case 'G':
-			return action({ type: 'bottom' });
 		case 'g':
-			return { kind: 'pending', pending: 'g' };
+			return { kind: 'pending', pending: digits + 'g' };
 		case LEADER:
 			return { kind: 'pending', pending: LEADER };
+		case 'v':
+			return action({ type: 'visual', mode: 'char' });
+		case 'V':
+			return action({ type: 'visual', mode: 'line' });
+		case 'y':
+			return input.visual ? action({ type: 'yank' }) : passthrough;
 		case '?':
 			return action({ type: 'toggleHelp' });
 		case 'Enter':
 			return action({ type: 'open' });
 		case 'Escape':
-			return action({ type: 'closeHelp' });
+			return input.visual ? action({ type: 'exitVisual' }) : action({ type: 'closeHelp' });
 	}
-
-	const path = NUMBER_PAGES[input.key];
-	return path ? action({ type: 'goto', path }) : passthrough;
+	return passthrough;
 };
 
-// A lone Space keeps its native job (scroll a page) once the leader times out.
+// A lone Space keeps its native job (scroll a page) once the leader times out; a count or g is dropped.
 export const resolveTimeout = (pending: string): KeyAction | null =>
 	pending === LEADER ? { type: 'pageDown' } : null;
 
