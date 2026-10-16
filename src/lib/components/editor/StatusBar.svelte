@@ -12,6 +12,7 @@
 		class="mode"
 		class:terminal={mode === 'TERMINAL'}
 		class:visual={mode.startsWith('VISUAL')}
+		class:insert={mode === 'INSERT'}
 		aria-live="polite">{mode}</span
 	>
 	<span class="seg">{fileForPath(page.url.pathname)}</span>
@@ -57,6 +58,10 @@
 
 	.mode.visual {
 		background: var(--nord-15);
+	}
+
+	.mode.insert {
+		background: var(--nord-13);
 	}
 
 	.msg {

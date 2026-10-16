@@ -77,6 +77,8 @@
 
 	const onkeydown = (event: KeyboardEvent) => {
 		if (event.defaultPrevented) return;
+		// Any key ends the startup intro, then goes on to do its normal job.
+		buffer?.finishIntro();
 		// Space or Enter on a focused button or link keeps its native meaning.
 		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
 		editor.message = null;

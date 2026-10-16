@@ -163,6 +163,33 @@ a:hover {
 	background-color: rgb(136 192 208 / 0.35);
 }
 
+/* Art rows use a bigger font whose line box fills the row; their cursor cell is drawn behind
+   the glyph in art-font units so it is one art char wide and the full row tall. */
+.buffer-content .banner-art .art {
+	position: relative;
+	z-index: 0;
+}
+
+.buffer-content .banner-art.cursor-art .art::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: calc(var(--cursor-col, 0) * 1ch);
+	width: 1ch;
+	z-index: -1;
+	background: var(--nord-4);
+}
+
+::highlight(cursor-glyph) {
+	color: var(--nord-0);
+}
+
+/* Banner text the startup intro hasn't typed yet. */
+::highlight(unrevealed) {
+	color: transparent;
+}
+
 /* A line with no text (hr, blank) can't hold a highlight, so its cursor cell is drawn here. */
 .buffer-content .cursor-cell::before {
 	content: '';
@@ -249,23 +276,9 @@ a:hover {
 	animation-delay: min(calc(var(--line-index, 0) * 15ms), 240ms);
 }
 
-@keyframes blink {
-	50% { opacity: 0; }
-}
-
-.cursor {
-	color: var(--nord-4);
-	font-weight: 400;
-	animation: blink 1s steps(1) infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	/* Same selector as the reveal rule above (including :not) so specificity matches and this wins. */
 	.buffer-content.reveal :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line):not(li *, .line *, blockquote *, .banner-h1) {
-		animation: none;
-	}
-
-	.cursor {
 		animation: none;
 	}
 }
