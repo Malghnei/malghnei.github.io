@@ -2,14 +2,17 @@
 	import { editor } from '$lib/editor/state.svelte';
 
 	const KEYS: [string, string][] = [
-		['j / k', 'move down / up'],
+		['h j k l', 'move'],
+		['w b e', 'next / back / word end'],
+		['0 $', 'line start / end'],
 		['gg / G', 'top / bottom'],
-		['1 2 3', 'home / about / projects'],
+		['v / V', 'visual / visual line'],
+		['y', 'yank selection'],
 		['␣ h a p', 'home / about / projects'],
 		['⏎', 'open preview'],
 		['ctrl+/', 'toggle terminal'],
 		['?', 'toggle this help'],
-		['esc', 'close']
+		['esc', 'exit visual / close']
 	];
 </script>
 

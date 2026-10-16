@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { ART_SCALE, artWidth, parseBanner, variantCss } from '$lib/banner/variants';
-	import { typeIn } from '$lib/editor/typeIn';
 
 	let { name }: { name: string } = $props();
 
@@ -32,11 +31,11 @@
 			class="line banner-row banner-art v{i}"
 			style:--art-scale={ART_SCALE}
 			aria-hidden="true"
-			><span class="art">{row}{#if r === v.rows.length - 1}<span class="cursor">█</span>{/if}</span></span
+			><span class="art">{row}</span></span
 		>{/each}
 {/each}
 <span class="line banner-row banner-fallback" aria-hidden="true"
-	><span use:typeIn>{name}</span><span class="cursor">█</span></span
+	><span>{name}</span></span
 >
 
 <style>

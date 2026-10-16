@@ -7,8 +7,17 @@
 </script>
 
 <footer class="statusbar">
-	<span class="mode" class:terminal={mode === 'TERMINAL'}>{mode}</span>
+	<!-- Live, so mode changes are announced; the position isn't, to avoid chatter on every motion. -->
+	<span
+		class="mode"
+		class:terminal={mode === 'TERMINAL'}
+		class:visual={mode.startsWith('VISUAL')}
+		class:insert={mode === 'INSERT'}
+		aria-live="polite">{mode}</span
+	>
 	<span class="seg">{fileForPath(page.url.pathname)}</span>
+	<!-- Always present, so screen readers announce it when the text arrives. -->
+	<span class="seg msg" class:empty={!editor.message} role="status">{editor.message ?? ''}</span>
 	{#if editor.terminal.status === 'minimized'}
 		<button type="button" class="seg restore" onclick={openTerminal}>[terminal]</button>
 	{/if}
@@ -24,7 +33,7 @@
 	</button>
 	<span class="seg right hide-sm">utf-8</span>
 	<span class="seg right hide-sm">md</span>
-	<span class="seg right pos">{editor.cursorLine}:1</span>
+	<span class="seg right pos">{editor.cursorLine}:{editor.cursorCol}</span>
 </footer>
 
 <style>
@@ -45,6 +54,23 @@
 
 	.mode.terminal {
 		background: var(--nord-14);
+	}
+
+	.mode.visual {
+		background: var(--nord-15);
+	}
+
+	.mode.insert {
+		background: var(--nord-13);
+	}
+
+	.msg {
+		color: var(--nord-13);
+	}
+
+	.msg.empty {
+		padding: 0;
+		border: 0;
 	}
 
 	.seg {

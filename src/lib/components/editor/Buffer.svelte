@@ -1,8 +1,31 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { onMount, tick, type Snippet } from 'svelte';
+	import { copyText } from '$lib/editor/clipboard';
 	import { LINE_SELECTOR } from '$lib/editor/lines';
+	import {
+		clampPos,
+		move,
+		selectedText,
+		selection,
+		yankMessage,
+		type Motion,
+		type Pos,
+		type VisualMode
+	} from '$lib/editor/motions';
+	import { INTRO_BUDGET_MS, introFrames, introStep, markIntroPlayed, shouldPlayIntro } from '$lib/editor/intro';
+	import {
+		clearPaint,
+		flashYank,
+		highlights,
+		paintCursor,
+		paintSelection,
+		paintUnrevealed,
+		supported as paintSupported
+	} from '$lib/editor/paint';
+	import { getSessionStorage } from '$lib/editor/persist';
 	import { editor } from '$lib/editor/state.svelte';
+	import { colAtPoint, mapLine, rangeAt, type LineMap } from '$lib/editor/textmap';
 	import { encodeTarget, parseTarget } from '$lib/preview/target';
 
 	let { children }: { children: Snippet } = $props();
@@ -17,6 +40,16 @@
 	// Where the mouse rests inside the content, so wheel scrolling can keep the cursor under it.
 	let lastPointer: { x: number; y: number } | null = null;
 	let activeEl: HTMLElement | null = null;
+	// Each line's on-screen text and where it lives in the DOM; rebuilt with lines.
+	let maps: LineMap[] = [];
+	// The column j/k aim for across short lines (nvim's curswant); Infinity after $.
+	let want = 0;
+	let cellLine: HTMLElement | null = null;
+	let artLine: HTMLElement | null = null;
+	let visualRows: HTMLElement[] = [];
+
+	const texts = () => maps.map((map) => map.folded.text);
+	const pos = (): Pos => ({ line: editor.cursorLine - 1, col: editor.cursorCol - 1 });
 
 	const scrollBehavior = (): ScrollBehavior =>
 		matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -79,19 +112,93 @@
 		lines = Array.from(content.querySelectorAll<HTMLElement>(LINE_SELECTOR)).filter(
 			(line) => line.offsetParent !== null
 		);
+		maps = lines.map(mapLine);
 		lines.forEach((line, index) => line.style.setProperty('--line-index', String(index)));
 		recountGutter();
 		// Filtering may have re-rendered the active element.
 		markActive();
+		// Text changed under the cursor (filtering): keep the place, clamped.
+		if (editor.visual) editor.visual = { ...editor.visual, anchor: clampPos(texts(), editor.visual.anchor) };
+		setPos(pos());
+		// The old highlight ranges may point at replaced text nodes.
+		repaint();
 	};
 
-	const setCursor = (index: number) => {
+	// Every cursor move goes through here; the position is clamped to the text.
+	const setPos = (next: Pos) => {
 		if (!lines.length) return;
-		const next = Math.min(Math.max(index, 0), lines.length - 1);
-		content.querySelector('.cursorline')?.classList.remove('cursorline');
-		lines[next].classList.add('cursorline');
-		editor.cursorLine = next + 1;
+		const at = clampPos(texts(), next);
+		const row = lines[at.line];
+		if (!row.classList.contains('cursorline')) {
+			content.querySelector('.cursorline')?.classList.remove('cursorline');
+			row.classList.add('cursorline');
+		}
+		editor.cursorLine = at.line + 1;
+		editor.cursorCol = at.col + 1;
 	};
+
+	// Rows set by the mouse and by scrolling aim for the remembered column, as j/k do.
+	const setCursor = (index: number) => setPos({ line: index, col: want });
+
+	const selectionRanges = (start: Pos, end: Pos): Range[] => {
+		const ranges: Range[] = [];
+		for (let line = start.line; line <= end.line; line++) {
+			const length = maps[line].folded.text.length;
+			const from = line === start.line ? start.col : 0;
+			const to = line === end.line ? Math.min(end.col + 1, length) : length;
+			const range = rangeAt(maps[line], from, to);
+			if (range) ranges.push(range);
+		}
+		return ranges;
+	};
+
+	const repaint = () => {
+		visualRows.forEach((row) => row.classList.remove('visual-line'));
+		visualRows = [];
+		// The intro paints even where the block cursor is otherwise off (touch).
+		const painting = paintSupported || editor.inserting;
+		const head = pos();
+		const map = maps[head.line];
+		const row = painting && map ? lines[head.line] : null;
+		// A line with no text can't hold a highlight; CSS draws its cursor cell instead.
+		const cell = row && map?.folded.text === '' ? row : null;
+		if (cell !== cellLine) {
+			cellLine?.classList.remove('cursor-cell');
+			cell?.classList.add('cursor-cell');
+			cellLine = cell;
+		}
+		// Art rows use a bigger font, so CSS draws their cell at the column to fill the row.
+		const art = row?.classList.contains('banner-art') ? row : null;
+		if (art !== artLine) {
+			artLine?.classList.remove('cursor-art');
+			art?.classList.add('cursor-art');
+			artLine = art;
+		}
+		art?.style.setProperty('--cursor-col', String(head.col));
+		if (!row || !map) return clearPaint();
+		paintCursor(rangeAt(map, head.col, head.col + 1), art !== null);
+		const visual = editor.visual;
+		if (!visual) return paintSelection([]);
+		const { start, end } = selection(visual.anchor, head, visual.mode, texts());
+		if (visual.mode === 'line') {
+			visualRows = lines.slice(start.line, end.line + 1);
+			visualRows.forEach((line) => line.classList.add('visual-line'));
+		}
+		paintSelection(selectionRanges(start, end));
+	};
+
+	$effect(() => {
+		// Read everything repaint depends on up front, so runs that return early still subscribe.
+		void [
+			editor.cursorLine,
+			editor.cursorCol,
+			editor.inserting,
+			editor.visual?.mode,
+			editor.visual?.anchor.line,
+			editor.visual?.anchor.col
+		];
+		repaint();
+	});
 
 	const replayReveal = () => {
 		content.classList.remove('reveal');
@@ -117,18 +224,96 @@
 		if (line) setPreview(line.closest('[data-preview]') ?? line.querySelector('[data-preview]'));
 	};
 
-	export const moveCursor = (delta: number) => {
+	export const motion = (name: Motion, count: number | null) => {
+		if (!lines.length) return;
 		holdCursorDuringScroll();
-		setCursor(editor.cursorLine - 1 + delta);
-		previewFromCursor();
-		lines[editor.cursorLine - 1]?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() });
+		const row = editor.cursorLine;
+		const result = move(texts(), pos(), name, count, want);
+		want = result.want;
+		setPos(result.pos);
+		if (editor.cursorLine !== row) previewFromCursor();
+		// Bare gg/G scroll all the way, so whatever sits above the first line or below the last shows too.
+		if ((name === 'gg' || name === 'G') && count === null) {
+			scroller.scrollTo({ top: name === 'gg' ? 0 : scroller.scrollHeight, behavior: scrollBehavior() });
+		} else {
+			lines[editor.cursorLine - 1]?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() });
+		}
 	};
 
-	export const scrollToEdge = (edge: 'top' | 'bottom') => {
-		holdCursorDuringScroll();
-		scroller.scrollTo({ top: edge === 'top' ? 0 : scroller.scrollHeight, behavior: scrollBehavior() });
-		setCursor(edge === 'top' ? 0 : lines.length - 1);
-		previewFromCursor();
+	// Like nvim: v in charwise visual leaves it, V there switches to linewise and keeps the anchor.
+	export const startVisual = (mode: VisualMode) => {
+		if (!lines.length) return;
+		if (editor.visual?.mode === mode) editor.visual = null;
+		else editor.visual = { mode, anchor: editor.visual?.anchor ?? pos() };
+	};
+
+	export const exitVisual = () => {
+		editor.visual = null;
+	};
+
+	export const yank = async () => {
+		const visual = editor.visual;
+		if (!visual || !lines.length) return;
+		const all = texts();
+		const sel = selection(visual.anchor, pos(), visual.mode, all);
+		const text = selectedText(all, sel, visual.mode);
+		const ranges = selectionRanges(sel.start, sel.end);
+		editor.visual = null;
+		want = sel.start.col;
+		setPos(sel.start);
+		if (await copyText(text)) {
+			flashYank(ranges);
+			editor.message = yankMessage(sel, visual.mode, text);
+		} else {
+			editor.message = 'yank failed';
+		}
+	};
+
+	// The art types in a few chars per frame; the narrow fallback row a char at a time, as before.
+	const ART_TICK_MS = 16;
+	const FALLBACK_TICK_MS = 40;
+	let introTimer: ReturnType<typeof setInterval> | undefined;
+
+	export const finishIntro = () => {
+		if (!editor.inserting) return;
+		clearInterval(introTimer);
+		paintUnrevealed([]);
+		editor.inserting = false;
+		want = 0;
+		setPos({ line: 0, col: 0 });
+	};
+
+	// Like insert mode: the cursor types the banner in, then the editor drops to NORMAL at 1:1.
+	const startIntro = () => {
+		const rows = lines.flatMap((line, index) => (line.classList.contains('banner-row') ? [index] : []));
+		const storage = getSessionStorage();
+		if (!rows.length || !highlights || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (!shouldPlayIntro(storage)) return;
+		markIntroPlayed(storage);
+		const lengths = rows.map((index) => maps[index].folded.text.length);
+		const art = lines[rows[0]].classList.contains('banner-art');
+		const tickMs = art ? ART_TICK_MS : FALLBACK_TICK_MS;
+		const step = art ? introStep(lengths.reduce((sum, length) => sum + length, 0), INTRO_BUDGET_MS, tickMs) : 1;
+		const frames = introFrames(lengths, step);
+		// Everything from `col` on row `row`, and every later banner row, stays hidden.
+		const show = (row: number, col: number) => {
+			const hidden: Range[] = [];
+			rows.forEach((index, i) => {
+				if (i < row) return;
+				const range = rangeAt(maps[index], i === row ? col : 0, maps[index].folded.text.length);
+				if (range) hidden.push(range);
+			});
+			paintUnrevealed(hidden);
+			setPos({ line: rows[row], col });
+		};
+		editor.inserting = true;
+		show(0, 0);
+		let frame = 0;
+		introTimer = setInterval(() => {
+			if (frame >= frames.length) return finishIntro();
+			const { line, col } = frames[frame++];
+			show(line, col);
+		}, tickMs);
 	};
 
 	export const pageDown = () => {
@@ -150,9 +335,56 @@
 		return -1;
 	};
 
+	// The character under the pointer; off the text, the row keeps the remembered column.
+	const posAt = (x: number, y: number): Pos | null => {
+		const line = lineAt(y);
+		if (line < 0) return null;
+		return { line, col: colAtPoint(maps[line], x, y) ?? want };
+	};
+
+	// Movement under this many px is still a click.
+	const DRAG_THRESHOLD_PX = 4;
+	let drag: { x: number; y: number; anchor: Pos; active: boolean } | null = null;
+	// The click that ends a drag must not follow a link the drag started on.
+	let suppressClick = false;
+
+	// Capture phase, so a drag that ended on a link is stopped before the link or the router sees it.
+	const onclickcapture = (event: MouseEvent) => {
+		if (!suppressClick) return;
+		suppressClick = false;
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
 	const onclick = (event: MouseEvent) => {
-		const index = lineAt(event.clientY);
-		if (index >= 0) setCursor(index);
+		// Links, buttons and form controls keep their own click.
+		if ((event.target as Element).closest('a, button, input, select, textarea, label')) return;
+		const at = posAt(event.clientX, event.clientY);
+		if (!at) return;
+		editor.visual = null;
+		want = at.col;
+		setPos(at);
+	};
+
+	const onpointerdown = (event: PointerEvent) => {
+		suppressClick = false;
+		// Where the selection can't be painted, the browser's own selection stays in charge.
+		if (!paintSupported || event.pointerType !== 'mouse' || event.button !== 0) return;
+		const at = posAt(event.clientX, event.clientY);
+		drag = at && { x: event.clientX, y: event.clientY, anchor: at, active: false };
+	};
+
+	const endDrag = () => {
+		if (drag?.active) {
+			content.classList.remove('dragging');
+			suppressClick = true;
+		}
+		drag = null;
+	};
+
+	// Links are draggable natively, which would swallow the pointer moves of a selection drag.
+	const ondragstart = (event: DragEvent) => {
+		if (drag) event.preventDefault();
 	};
 
 	// Like nvim with mouse=a: the cursor follows the mouse, but hovering never scrolls.
@@ -160,7 +392,8 @@
 		if (!target || !content.contains(target)) return false;
 		const index = lineAt(y);
 		// Checked against the DOM: filtering can remove the cursor's line and leave cursorLine stale.
-		if (index >= 0 && !lines[index].classList.contains('cursorline')) setCursor(index);
+		// In visual or during the intro, hover leaves the row alone.
+		if (index >= 0 && !editor.visual && !editor.inserting && !lines[index].classList.contains('cursorline')) setCursor(index);
 		setPreview(target.closest('[data-preview]'));
 		return index >= 0;
 	};
@@ -168,6 +401,21 @@
 	const onpointermove = (event: PointerEvent) => {
 		if (event.pointerType !== 'mouse') return;
 		lastPointer = { x: event.clientX, y: event.clientY };
+		if (drag && event.buttons & 1) {
+			if (!drag.active) {
+				if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD_PX) return;
+				drag.active = true;
+				content.classList.add('dragging');
+				window.getSelection()?.removeAllRanges();
+				editor.visual = { mode: 'char', anchor: drag.anchor };
+			}
+			const at = posAt(event.clientX, event.clientY);
+			if (at) {
+				want = at.col;
+				setPos(at);
+			}
+			return;
+		}
 		pointAt(event.target as Element, event.clientY);
 	};
 
@@ -212,16 +460,22 @@
 	});
 
 	afterNavigate(async () => {
+		finishIntro();
 		clearPreview();
+		editor.visual = null;
+		want = 0;
 		await tick();
 		requestAnimationFrame(() => {
 			collectLines();
 			scroller.scrollTop = 0;
-			setCursor(0);
+			setPos({ line: 0, col: 0 });
 			replayReveal();
+			startIntro();
 		});
 	});
 </script>
+
+<svelte:window onpointerup={endDrag} onpointercancel={endDrag} onpointerdown={finishIntro} onwheel={finishIntro} />
 
 <!-- tabindex: lets keyboard users focus the scroll area so arrows/PageDown work natively -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -240,8 +494,11 @@
 		class="buffer-content"
 		bind:this={content}
 		{onclick}
+		{onclickcapture}
+		{onpointerdown}
 		{onpointermove}
 		{onpointerleave}
+		{ondragstart}
 	>
 		{@render children()}
 	</div>

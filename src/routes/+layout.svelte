@@ -38,12 +38,14 @@
 
 	const runAction = (action: KeyAction) => {
 		switch (action.type) {
-			case 'scroll':
-				return buffer?.moveCursor(action.lines);
-			case 'top':
-				return buffer?.scrollToEdge('top');
-			case 'bottom':
-				return buffer?.scrollToEdge('bottom');
+			case 'motion':
+				return buffer?.motion(action.motion, action.count);
+			case 'visual':
+				return buffer?.startVisual(action.mode);
+			case 'yank':
+				return buffer?.yank();
+			case 'exitVisual':
+				return buffer?.exitVisual();
 			case 'pageDown':
 				return buffer?.pageDown();
 			case 'pageUp':
@@ -75,8 +77,11 @@
 
 	const onkeydown = (event: KeyboardEvent) => {
 		if (event.defaultPrevented) return;
+		// Any key ends the startup intro, then goes on to do its normal job.
+		buffer?.finishIntro();
 		// Space or Enter on a focused button or link keeps its native meaning.
 		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
+		editor.message = null;
 
 		const result = resolveKey(pending, {
 			key: event.key,
@@ -84,7 +89,8 @@
 			altKey: event.altKey,
 			metaKey: event.metaKey,
 			inEditable: isEditableTarget(event.target),
-			onBody: event.target === document.body || event.target === document.documentElement
+			onBody: event.target === document.body || event.target === document.documentElement,
+			visual: editor.visual !== null
 		});
 		pending = '';
 		clearTimeout(pendingTimer);
