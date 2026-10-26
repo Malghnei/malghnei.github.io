@@ -7,7 +7,7 @@ export const siteContent = {
 	heroDescription: 'Building Kata, a martial arts training platform.',
 	aboutNarrative: [
 		"I'm Malik, a third-year Computer Science student at Western University. I'm most interested in cybersecurity, machine learning, and embedded systems.",
-		"I handle software and electronics for the micro-class team at Western Aero Design. Outside of class, I'm building Kata, a platform that helps people train martial arts on their own.",
+		"Outside of class, I'm always keeping up to date on new technologies and building projects to solve issues and learn more. A project I am proud of building is Kata, a platform that helps people train martial arts on their own.",
 		'Away from the keyboard, I play badminton, train Taekwondo, and go rock climbing. When I want to switch off, it’s video games or a good TV show.'
 	],
 	setup: {
