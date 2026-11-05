@@ -37,22 +37,34 @@
 		--card-open: var(--nord-8);
 	}
 
-	/* Cursor on any row of the card (or forced active): all four rows share the cursorline fill. */
+	/* Mouse on any row of the card: all four rows share the fainter hoverline fill. */
+	.card:has(:global(.hoverline)) {
+		--row-bg: var(--hoverline-bg);
+	}
+
+	.card:has(:global(.hoverline)) .line {
+		background-color: var(--hoverline-bg);
+	}
+
+	/* Cursor on any row of the card (or previewed): the border lights up; only the cursor fills it. */
 	.card:has(:global(.cursorline)),
 	.card:global([data-active]) {
 		--card-border: var(--nord-8);
 		--card-open: var(--nord-8);
+	}
+
+	.card:has(:global(.cursorline)) {
 		--row-bg: var(--cursorline-bg);
 	}
 
 	/* The card shows it is active itself; the global [data-active] outline would sit outside it
-	   and be clipped by the next card's label backgrounds. */
+	   and be clipped by the next card's label backgrounds, and its fill would cover the rows. */
 	.card:global([data-active]) {
 		outline: none;
+		background: none;
 	}
 
-	.card:has(:global(.cursorline)) .line,
-	.card:global([data-active]) .line {
+	.card:has(:global(.cursorline)) .line {
 		background-color: var(--cursorline-bg);
 	}
 

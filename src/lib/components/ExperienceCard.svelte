@@ -29,18 +29,29 @@
 		color: var(--nord-4);
 	}
 
+	.card:has(:global(.hoverline)) {
+		--row-bg: var(--hoverline-bg);
+	}
+
+	.card:has(:global(.hoverline)) .line {
+		background-color: var(--hoverline-bg);
+	}
+
 	.card:has(:global(.cursorline)),
 	.card:global([data-active]) {
 		--card-border: var(--nord-8);
+	}
+
+	.card:has(:global(.cursorline)) {
 		--row-bg: var(--cursorline-bg);
 	}
 
 	.card:global([data-active]) {
 		outline: none;
+		background: none;
 	}
 
-	.card:has(:global(.cursorline)) .line,
-	.card:global([data-active]) .line {
+	.card:has(:global(.cursorline)) .line {
 		background-color: var(--cursorline-bg);
 	}
 
