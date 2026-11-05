@@ -48,6 +48,8 @@
 	--gutter: 6ch;
 	/* Solid, so card labels can paint over their border line on the cursor line. */
 	--cursorline-bg: #353b49;
+	/* The mouse's row: halfway from nord-0 to the cursorline, solid for the same reason. */
+	--hoverline-bg: #323844;
 	/* nvim Nord's Visual colour. */
 	--visual-bg: var(--nord-2);
 }
@@ -137,6 +139,13 @@ a:hover {
 	color: var(--nord-3);
 	font-weight: 400;
 	pointer-events: none;
+}
+
+/* Before .cursorline so the cursor wins on a row that has both. */
+.buffer-content .hoverline {
+	background-color: var(--hoverline-bg);
+	box-shadow: calc(-1 * var(--gutter)) 0 0 var(--hoverline-bg);
+	--row-bg: var(--hoverline-bg);
 }
 
 .buffer-content .cursorline {

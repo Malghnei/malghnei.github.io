@@ -27,6 +27,7 @@
 	import { editor } from '$lib/editor/state.svelte';
 	import { colAtPoint, mapLine, rangeAt, type LineMap } from '$lib/editor/textmap';
 	import { encodeTarget, parseTarget } from '$lib/preview/target';
+	import type { PreviewTarget } from '$lib/types';
 
 	let { children }: { children: Snippet } = $props();
 
@@ -37,9 +38,13 @@
 	// While j/k/gg/G scroll smoothly, the cursor is already where it should be; don't let onscroll drag it.
 	let programmaticScroll = false;
 	let programmaticTimer: ReturnType<typeof setTimeout> | undefined;
-	// Where the mouse rests inside the content, so wheel scrolling can keep the cursor under it.
+	// Where the mouse rests inside the content, so wheel scrolling can move the hover line with it.
 	let lastPointer: { x: number; y: number } | null = null;
 	let activeEl: HTMLElement | null = null;
+	// The mouse's own row, drawn fainter than the cursorline; the mouse never moves the cursor.
+	let hoverLine: HTMLElement | null = null;
+	// The item keys or a click last landed the cursor on; the preview falls back to it off an item.
+	let cursorPreview: PreviewTarget | null = null;
 	// Each line's on-screen text and where it lives in the DOM; rebuilt with lines.
 	let maps: LineMap[] = [];
 	// The column j/k aim for across short lines (nvim's curswant); Infinity after $.
@@ -83,20 +88,39 @@
 		return copy.textContent?.trim() ?? '';
 	};
 
+	// Returns whether el previews something.
 	const setPreview = (el: Element | null | undefined) => {
-		if (!(el instanceof HTMLElement)) return;
+		if (!(el instanceof HTMLElement)) return false;
 		// Same target from another element (a card and a ref to it): only the marker moves.
 		// Checked first so a pointermove over the current target costs no parsing or cloning.
-		if (editor.preview && el.dataset.preview === encodeTarget(editor.preview)) return mark(el);
+		if (editor.preview && el.dataset.preview === encodeTarget(editor.preview)) {
+			mark(el);
+			return true;
+		}
 		const next = parseTarget(el.dataset.preview ?? null, labelOf(el));
-		if (!next) return;
+		if (!next) return false;
 		editor.preview = next;
 		mark(el);
+		return true;
 	};
 
 	const clearPreview = () => {
 		editor.preview = null;
+		cursorPreview = null;
 		mark(null);
+	};
+
+	const previewCursorItem = () => {
+		if (editor.preview === cursorPreview) return;
+		editor.preview = cursorPreview;
+		markActive();
+	};
+
+	const setHoverLine = (row: HTMLElement | null) => {
+		if (row === hoverLine) return;
+		hoverLine?.classList.remove('hoverline');
+		row?.classList.add('hoverline');
+		hoverLine = row;
 	};
 
 	// Chromium leaves counter() in later lines' ::after stale when earlier counted lines are removed;
@@ -113,6 +137,8 @@
 			(line) => line.offsetParent !== null
 		);
 		maps = lines.map(mapLine);
+		// The hovered row may be gone; the next pointer move sets it again.
+		setHoverLine(null);
 		lines.forEach((line, index) => line.style.setProperty('--line-index', String(index)));
 		recountGutter();
 		// Filtering may have re-rendered the active element.
@@ -137,7 +163,7 @@
 		editor.cursorCol = at.col + 1;
 	};
 
-	// Rows set by the mouse and by scrolling aim for the remembered column, as j/k do.
+	// Rows set by scrolling aim for the remembered column, as j/k do.
 	const setCursor = (index: number) => setPos({ line: index, col: want });
 
 	const selectionRanges = (start: Pos, end: Pos): Range[] => {
@@ -221,7 +247,9 @@
 	// A card row gives its project (own or ancestor target); otherwise the first ref on the line.
 	const previewFromCursor = () => {
 		const line = lines[editor.cursorLine - 1];
-		if (line) setPreview(line.closest('[data-preview]') ?? line.querySelector('[data-preview]'));
+		if (line && setPreview(line.closest('[data-preview]') ?? line.querySelector('[data-preview]'))) {
+			cursorPreview = editor.preview;
+		}
 	};
 
 	export const motion = (name: Motion, count: number | null) => {
@@ -364,6 +392,7 @@
 		editor.visual = null;
 		want = at.col;
 		setPos(at);
+		previewFromCursor();
 	};
 
 	const onpointerdown = (event: PointerEvent) => {
@@ -387,15 +416,11 @@
 		if (drag) event.preventDefault();
 	};
 
-	// Like nvim with mouse=a: the cursor follows the mouse, but hovering never scrolls.
-	const pointAt = (target: Element | null, y: number): boolean => {
-		if (!target || !content.contains(target)) return false;
-		const index = lineAt(y);
-		// Checked against the DOM: filtering can remove the cursor's line and leave cursorLine stale.
-		// In visual or during the intro, hover leaves the row alone.
-		if (index >= 0 && !editor.visual && !editor.inserting && !lines[index].classList.contains('cursorline')) setCursor(index);
-		setPreview(target.closest('[data-preview]'));
-		return index >= 0;
+	// The mouse gets its own line and previews what it is over; only keys and clicks move the cursor.
+	const pointAt = (target: Element | null, y: number) => {
+		if (!target || !content.contains(target)) return setHoverLine(null);
+		setHoverLine(lines[lineAt(y)] ?? null);
+		if (!setPreview(target.closest('[data-preview]'))) previewCursorItem();
 	};
 
 	const onpointermove = (event: PointerEvent) => {
@@ -421,6 +446,8 @@
 
 	const onpointerleave = () => {
 		lastPointer = null;
+		setHoverLine(null);
+		previewCursorItem();
 	};
 
 	const onfocusin = (event: FocusEvent) => {
@@ -432,8 +459,8 @@
 		if (programmaticScroll) return;
 		cancelAnimationFrame(scrollFrame);
 		scrollFrame = requestAnimationFrame(() => {
-			// With the mouse resting on a line, wheel scrolling keeps the cursor under it.
-			if (lastPointer && pointAt(document.elementFromPoint(lastPointer.x, lastPointer.y), lastPointer.y)) return;
+			// With the mouse resting on the content, the hover line follows whatever scrolls under it.
+			if (lastPointer) pointAt(document.elementFromPoint(lastPointer.x, lastPointer.y), lastPointer.y);
 			const view = scroller.getBoundingClientRect();
 			const current = lines[editor.cursorLine - 1]?.getBoundingClientRect();
 			if (current && current.bottom > view.top && current.top < view.bottom) return;
