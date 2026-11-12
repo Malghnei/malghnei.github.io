@@ -9,6 +9,7 @@
 	import StatusBar from '$lib/components/editor/StatusBar.svelte';
 	import TerminalWindow from '$lib/components/terminal/TerminalWindow.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import WhichKey from '$lib/components/editor/WhichKey.svelte';
 	import {
 		isEditableTarget,
@@ -23,6 +24,9 @@
 	import { buildDictionary } from '$lib/refs/tokenize';
 
 	let { children, data } = $props();
+
+	// Home is a start screen with no preview pane.
+	const home = $derived(page.url.pathname === '/');
 
 	// A getter, so readers always see the dictionary for the current data.
 	const dict = $derived(buildDictionary(data.projects));
@@ -123,12 +127,14 @@
 <div class="app">
 	<Navbar />
 	<div class="workspace">
-		<div class="main">
+		<div class="main" class:home>
 			<Buffer bind:this={buffer}>
 				{@render children()}
 			</Buffer>
 		</div>
-		<PreviewPane projects={data.projects} links={siteContent.links.items} />
+		{#if !home}
+			<PreviewPane projects={data.projects} links={siteContent.links.items} />
+		{/if}
 		<TerminalWindow projects={data.projects} />
 		<WhichKey />
 	</div>
@@ -160,7 +166,11 @@
 		flex-direction: column;
 	}
 
-	/* The preview pane is hidden here, so the buffer takes the whole width as before. */
+	/* No preview pane here, so the buffer takes the whole width. */
+	.main.home {
+		flex: 1;
+	}
+
 	@media (max-width: 1279px), (hover: none) {
 		.main {
 			flex: 1;

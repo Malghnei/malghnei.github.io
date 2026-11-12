@@ -1,10 +1,8 @@
 <script lang="ts">
 	import Banner from '$lib/components/Banner.svelte';
 	import Blank from '$lib/components/editor/Blank.svelte';
-	import ExtLink from '$lib/components/refs/ExtLink.svelte';
-	import Prose from '$lib/components/refs/Prose.svelte';
-	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import { siteContent } from '$lib/data/site';
+	import { openTerminal } from '$lib/editor/state.svelte';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -17,51 +15,51 @@
 	});
 </script>
 
-<Banner name={siteContent.name} />
-<p class="role">{siteContent.role}</p>
-<Blank />
-<div class="callout">
+<!-- A start screen, like nvim's with no file open. Every row below the art is an ordinary
+     buffer line, so the cursor, motions, visual mode and yank work as on every other page. -->
+<div class="dash">
+	<Banner name={siteContent.name} />
+	<p class="role">{siteContent.role}</p>
 	<p class="status"><span aria-hidden="true">●</span> {siteContent.status.toLowerCase()}</p>
-	<p><Prose text={siteContent.heroDescription} /></p>
-</div>
-<!-- Contact sits in the hero so it's on the first screen, not after the project cards. -->
-<p class="links">
-	{#each siteContent.links.items as link (link.href)}
-		<ExtLink href={link.href} label={link.label} />
+	<Blank />
+	<a class="line menu-row" href="/projects/">
+		<span class="key">p</span><span class="label">projects</span><span class="leader" aria-hidden="true"></span><span class="note">{data.projectCount} files</span>
+	</a>
+	<a class="line menu-row" href="/about/">
+		<span class="key">a</span><span class="label">about</span><span class="leader" aria-hidden="true"></span><span class="note">experience, setup</span>
+	</a>
+	<button type="button" class="line menu-row" onclick={openTerminal}>
+		<span class="key">t</span><span class="label">terminal</span><span class="leader" aria-hidden="true"></span><span class="note">ls, cat, open</span>
+	</button>
+	<p class="contact">
+		<a href={emailHref}>email</a>
+		{#each siteContent.links.items as link (link.href)}
+			<a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+		{/each}
+	</p>
+	<Blank />
+	<h2>featured</h2>
+	{#each data.featuredProjects as project (project.slug)}
+		<a class="line feat" href={`/projects/${project.slug}/`}
+			><strong>{project.title}</strong> <span class="summary">{project.summary}</span></a
+		>
 	{/each}
-	<ExtLink href={emailHref} label="email" />
-</p>
-<Blank />
-<h2>featured</h2>
-{#each data.featuredProjects as project (project.slug)}
-	<ProjectCard {project} />
-{/each}
-<p><a href="/projects/">→ see all projects</a></p>
+	<Blank />
+	<p class="hint">j/k to move · ⏎ to open · ? for all keys</p>
+</div>
 
 <style>
+	.dash {
+		container: dash / inline-size;
+		width: min(100%, 119ch);
+	}
+
+	.dash :global(.art-block) {
+		margin-bottom: 0.5lh;
+	}
+
 	.role {
 		color: var(--nord-9);
-	}
-
-	/* The bar is drawn, not a border, so the lines keep the buffer's left edge: their gutter
-	   numbers stay aligned and the cursorline fill spans the row. Same approach as the cards. */
-	.callout {
-		position: relative;
-	}
-
-	.callout::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		border-left: 2px solid var(--nord-14);
-		pointer-events: none;
-		z-index: 1; /* above the cursorline fill */
-	}
-
-	.callout p {
-		padding-left: calc(2px + 1.5ch);
 	}
 
 	.status {
@@ -69,9 +67,92 @@
 		color: var(--nord-14);
 	}
 
-	.links {
+	.menu-row {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0 2ch;
+		align-items: center;
+		gap: 2ch;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: var(--nord-4);
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.key {
+		font-weight: 700;
+		color: var(--nord-13);
+	}
+
+	.leader {
+		flex: 1;
+		align-self: center;
+		border-bottom: 1px dotted var(--nord-3);
+	}
+
+	.note,
+	.summary,
+	.hint {
+		color: var(--nord-9);
+	}
+
+	.contact {
+		display: flex;
+		gap: 3ch;
+		padding-left: 3ch;
+	}
+
+	.feat {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--nord-4);
+	}
+
+	.feat strong {
+		color: var(--nord-6);
+	}
+
+	.summary {
+		margin-left: 1ch;
+	}
+
+	.hint {
+		text-align: center;
+	}
+
+	/* nvim's own heading marker doesn't belong on a start screen. */
+	.dash h2::before {
+		content: none;
+	}
+
+	@container dash (width < 840px) {
+		.feat {
+			white-space: normal;
+		}
+
+		.summary {
+			display: block;
+			margin-left: 0;
+		}
+	}
+
+	@media (hover: none) {
+		.key,
+		.hint,
+		.contact {
+			display: none;
+		}
+
+		.menu-row,
+		.feat {
+			min-height: 44px;
+		}
+
+		.feat {
+			padding-block: 0.25lh;
+		}
 	}
 </style>

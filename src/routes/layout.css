@@ -141,6 +141,26 @@ a:hover {
 	pointer-events: none;
 }
 
+/* Home is a start screen: no gutter, no line numbers, the column centred both ways. */
+.buffer-content:has(.dash) {
+	--gutter: 0ch;
+	flex: 1 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	max-width: none;
+	padding: 1lh 16px;
+}
+
+.buffer-content .dash :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line)::after {
+	content: none;
+}
+
+.buffer:has(.dash) .buffer-tildes {
+	display: none;
+}
+
 /* Before .cursorline so the cursor wins on a row that has both. */
 .buffer-content .hoverline {
 	background-color: var(--hoverline-bg);
