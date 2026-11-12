@@ -35,7 +35,7 @@
 	<p class="contact">
 		<a href={emailHref}>email</a>
 		{#each siteContent.links.items as link (link.href)}
-			<a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+			{' '}<a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
 		{/each}
 	</p>
 	<Blank />
@@ -50,9 +50,11 @@
 </div>
 
 <style>
+	/* As wide as the one-line art at its largest (119 cells of 0.565em, see Banner), so the
+	   rows end where the name does. */
 	.dash {
 		container: dash / inline-size;
-		width: min(100%, 119ch);
+		width: min(100%, calc(119 * 0.565em));
 	}
 
 	.dash :global(.art-block) {

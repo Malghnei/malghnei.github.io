@@ -138,6 +138,18 @@
 		}
 	}
 
+	/* The narrowest phones can't fit a file name beside the contact links at all. */
+	@media (hover: none) and (max-width: 359px) {
+		.statusbar .file {
+			display: none;
+		}
+
+		.statusbar .seg,
+		.statusbar .mode {
+			padding: 0 0.6ch;
+		}
+	}
+
 	@media (max-width: 639px) {
 		.hide-sm {
 			display: none;
