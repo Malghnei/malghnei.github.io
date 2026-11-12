@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
+	let decoding = $state(false);
 
 	// The prerendered HTML only ever holds the "user [@] domain" form; the real address is
 	// assembled in the browser, so scrapers reading the static page don't get it.
@@ -17,8 +18,8 @@
 
 <!-- A start screen, like nvim's with no file open. Every row below the art is an ordinary
      buffer line, so the cursor, motions, visual mode and yank work as on every other page. -->
-<div class="dash">
-	<Banner name={siteContent.name} />
+<div class="dash" class:decoding>
+	<Banner name={siteContent.name} bind:decoding />
 	<p class="role">{siteContent.role}</p>
 	<p class="status"><span aria-hidden="true">●</span> {siteContent.status.toLowerCase()}</p>
 	<Blank />
@@ -56,6 +57,23 @@
 
 	.dash :global(.art-block) {
 		margin-bottom: 0.5lh;
+	}
+
+	/* The rows wait for the name, then fade in one after another. Hiding is instant; only the
+	   reveal transitions, so rows don't fade out when the decode starts. */
+	.dash.decoding > :global(*:not(.art-block)) {
+		opacity: 0;
+	}
+
+	.dash:not(.decoding) > :global(*) {
+		transition: opacity 250ms ease-out;
+		transition-delay: calc(var(--line-index, 0) * 45ms);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.dash:not(.decoding) > :global(*) {
+			transition: none;
+		}
 	}
 
 	.role {

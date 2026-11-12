@@ -1,8 +1,73 @@
 <script lang="ts">
+	import { decodeGlyph, settleAt } from '$lib/banner/decode';
 	import { SHADOW_CHARS, sweepColor } from '$lib/banner/sweep';
 	import { parseBanner } from '$lib/banner/variants';
+	import { markIntroPlayed, shouldPlayIntro } from '$lib/editor/intro';
+	import { getSessionStorage } from '$lib/editor/persist';
+	import { onMount } from 'svelte';
 
-	let { name }: { name: string } = $props();
+	let { name, decoding = $bindable(false) }: { name: string; decoding?: boolean } = $props();
+
+	let block: HTMLElement;
+	let frame = 0;
+	type Cell = { text: Text; ch: string; span: HTMLElement; at: number; seed: number; settled: boolean };
+	let cells: Cell[] = [];
+
+	const settle = (cell: Cell) => {
+		cell.settled = true;
+		cell.text.nodeValue = cell.ch;
+		cell.span.style.opacity = '';
+		if (cell.ch === '█') cell.span.classList.add('solid');
+	};
+
+	// Any key, click or wheel ends it at once; the key still does its own job.
+	const finish = () => {
+		if (!decoding) return;
+		cancelAnimationFrame(frame);
+		cells.forEach((cell) => cell.settled || settle(cell));
+		decoding = false;
+	};
+
+	// Both variants decode together, so one revealed by a resize mid-way is never left scrambled.
+	onMount(() => {
+		const reveal = () => document.documentElement.classList.remove('intro');
+		const storage = getSessionStorage();
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches || !shouldPlayIntro(storage)) return reveal();
+		markIntroPlayed(storage);
+		cells = [...block.querySelectorAll<HTMLElement>('.variant')].flatMap((variant) => {
+			const width = Number(variant.style.getPropertyValue('--cols'));
+			return [...variant.querySelectorAll('.art-row')].flatMap((row) =>
+				[...row.children].flatMap((span, col) => {
+					const text = span.firstChild;
+					if (!(span instanceof HTMLElement) || !(text instanceof Text) || text.nodeValue === ' ') return [];
+					return [{ text, ch: text.nodeValue ?? '', span, at: settleAt(col, width, Math.random()), seed: Math.random(), settled: false }];
+				})
+			);
+		});
+		decoding = true;
+		const start = performance.now();
+		const step = (now: number) => {
+			const elapsed = now - start;
+			let pending = false;
+			for (const cell of cells) {
+				if (cell.settled) continue;
+				if (elapsed >= cell.at) {
+					settle(cell);
+					continue;
+				}
+				pending = true;
+				cell.text.nodeValue = decodeGlyph(elapsed, cell.seed);
+				cell.span.classList.remove('solid');
+				cell.span.style.opacity = '0.4';
+			}
+			if (pending) frame = requestAnimationFrame(step);
+			else finish();
+		};
+		// The first frame runs now, so the screen is revealed already scrambled.
+		step(start);
+		reveal();
+		return finish;
+	});
 
 	const files = import.meta.glob<string>('../data/banner*.txt', {
 		query: '?raw',
@@ -32,8 +97,10 @@
 
 <!-- The art rows are not buffer lines: the cursor skips them and they carry no gutter number.
      The h1 names the page for assistive tech; .banner-h1 keeps it out of the line count. -->
+<svelte:window onkeydown={finish} onpointerdown={finish} onwheel={finish} />
+
 <h1 class="banner-h1 sr-only">{name}</h1>
-<div class="art-block" aria-hidden="true">
+<div class="art-block" aria-hidden="true" bind:this={block}>
 	{#each variants as v, i (i)}
 		<div class="variant v{i}" style:--cols={v.width}>
 			{#each v.rows as row, r (r)}

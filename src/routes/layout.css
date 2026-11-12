@@ -161,6 +161,11 @@ a:hover {
 	display: none;
 }
 
+/* Set in app.html on a first visit; Banner clears it once the decode has started. */
+html.intro .dash {
+	visibility: hidden;
+}
+
 /* Before .cursorline so the cursor wins on a row that has both. */
 .buffer-content .hoverline {
 	background-color: var(--hoverline-bg);
@@ -192,14 +197,6 @@ a:hover {
 	background-color: rgb(136 192 208 / 0.35);
 }
 
-::highlight(cursor-glyph) {
-	color: var(--nord-0);
-}
-
-/* Banner text the startup intro hasn't typed yet. */
-::highlight(unrevealed) {
-	color: transparent;
-}
 
 /* A line with no text (hr, blank) can't hold a highlight, so its cursor cell is drawn here. */
 .buffer-content .cursor-cell::before {

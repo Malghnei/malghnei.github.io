@@ -1,33 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INTRO_PLAYED_KEY, introFrames, introStep, markIntroPlayed, shouldPlayIntro } from './intro';
-
-describe('introStep', () => {
-	it('reveals enough chars per tick to finish within the budget', () => {
-		expect(introStep(600, 1200, 16)).toBe(8);
-	});
-
-	it('reveals at least one char per tick', () => {
-		expect(introStep(12, 1200, 16)).toBe(1);
-		expect(introStep(0, 1200, 16)).toBe(1);
-	});
-});
-
-describe('introFrames', () => {
-	it('steps through each row, ending exactly at its length', () => {
-		expect(introFrames([5, 3], 2)).toEqual([
-			{ line: 0, col: 2 },
-			{ line: 0, col: 4 },
-			{ line: 0, col: 5 },
-			{ line: 1, col: 2 },
-			{ line: 1, col: 3 }
-		]);
-	});
-
-	it('gives an empty row one frame and no rows none', () => {
-		expect(introFrames([0, 2], 5)).toEqual([{ line: 0, col: 0 }, { line: 1, col: 2 }]);
-		expect(introFrames([], 1)).toEqual([]);
-	});
-});
+import { INTRO_PLAYED_KEY, markIntroPlayed, shouldPlayIntro } from './intro';
 
 describe('session flag', () => {
 	const memory = () => {

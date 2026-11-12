@@ -13,17 +13,14 @@
 		type Pos,
 		type VisualMode
 	} from '$lib/editor/motions';
-	import { INTRO_BUDGET_MS, introFrames, introStep, markIntroPlayed, shouldPlayIntro } from '$lib/editor/intro';
 	import {
 		clearPaint,
 		flashYank,
 		highlights,
 		paintCursor,
 		paintSelection,
-		paintUnrevealed,
 		supported as paintSupported
 	} from '$lib/editor/paint';
-	import { getSessionStorage } from '$lib/editor/persist';
 	import { editor } from '$lib/editor/state.svelte';
 	import { colAtPoint, mapLine, rangeAt, type LineMap } from '$lib/editor/textmap';
 	import { encodeTarget, parseTarget } from '$lib/preview/target';
@@ -50,7 +47,6 @@
 	// The column j/k aim for across short lines (nvim's curswant); Infinity after $.
 	let want = 0;
 	let cellLine: HTMLElement | null = null;
-	let artLine: HTMLElement | null = null;
 	let visualRows: HTMLElement[] = [];
 
 	const texts = () => maps.map((map) => map.folded.text);
@@ -181,11 +177,9 @@
 	const repaint = () => {
 		visualRows.forEach((row) => row.classList.remove('visual-line'));
 		visualRows = [];
-		// The intro paints even where the block cursor is otherwise off (touch).
-		const painting = paintSupported || editor.inserting;
 		const head = pos();
 		const map = maps[head.line];
-		const row = painting && map ? lines[head.line] : null;
+		const row = paintSupported && map ? lines[head.line] : null;
 		// A line with no text can't hold a highlight; CSS draws its cursor cell instead.
 		const cell = row && map?.folded.text === '' ? row : null;
 		if (cell !== cellLine) {
@@ -193,16 +187,8 @@
 			cell?.classList.add('cursor-cell');
 			cellLine = cell;
 		}
-		// Art rows use a bigger font, so CSS draws their cell at the column to fill the row.
-		const art = row?.classList.contains('banner-art') ? row : null;
-		if (art !== artLine) {
-			artLine?.classList.remove('cursor-art');
-			art?.classList.add('cursor-art');
-			artLine = art;
-		}
-		art?.style.setProperty('--cursor-col', String(head.col));
 		if (!row || !map) return clearPaint();
-		paintCursor(rangeAt(map, head.col, head.col + 1), art !== null);
+		paintCursor(rangeAt(map, head.col, head.col + 1));
 		const visual = editor.visual;
 		if (!visual) return paintSelection([]);
 		const { start, end } = selection(visual.anchor, head, visual.mode, texts());
@@ -218,7 +204,6 @@
 		void [
 			editor.cursorLine,
 			editor.cursorCol,
-			editor.inserting,
 			editor.visual?.mode,
 			editor.visual?.anchor.line,
 			editor.visual?.anchor.col
@@ -295,53 +280,6 @@
 		} else {
 			editor.message = 'yank failed';
 		}
-	};
-
-	// The art types in a few chars per frame; the narrow fallback row a char at a time, as before.
-	const ART_TICK_MS = 16;
-	const FALLBACK_TICK_MS = 40;
-	let introTimer: ReturnType<typeof setInterval> | undefined;
-
-	export const finishIntro = () => {
-		if (!editor.inserting) return;
-		clearInterval(introTimer);
-		paintUnrevealed([]);
-		editor.inserting = false;
-		want = 0;
-		setPos({ line: 0, col: 0 });
-	};
-
-	// Like insert mode: the cursor types the banner in, then the editor drops to NORMAL at 1:1.
-	const startIntro = () => {
-		const rows = lines.flatMap((line, index) => (line.classList.contains('banner-row') ? [index] : []));
-		const storage = getSessionStorage();
-		if (!rows.length || !highlights || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		if (!shouldPlayIntro(storage)) return;
-		markIntroPlayed(storage);
-		const lengths = rows.map((index) => maps[index].folded.text.length);
-		const art = lines[rows[0]].classList.contains('banner-art');
-		const tickMs = art ? ART_TICK_MS : FALLBACK_TICK_MS;
-		const step = art ? introStep(lengths.reduce((sum, length) => sum + length, 0), INTRO_BUDGET_MS, tickMs) : 1;
-		const frames = introFrames(lengths, step);
-		// Everything from `col` on row `row`, and every later banner row, stays hidden.
-		const show = (row: number, col: number) => {
-			const hidden: Range[] = [];
-			rows.forEach((index, i) => {
-				if (i < row) return;
-				const range = rangeAt(maps[index], i === row ? col : 0, maps[index].folded.text.length);
-				if (range) hidden.push(range);
-			});
-			paintUnrevealed(hidden);
-			setPos({ line: rows[row], col });
-		};
-		editor.inserting = true;
-		show(0, 0);
-		let frame = 0;
-		introTimer = setInterval(() => {
-			if (frame >= frames.length) return finishIntro();
-			const { line, col } = frames[frame++];
-			show(line, col);
-		}, tickMs);
 	};
 
 	export const pageDown = () => {
@@ -487,7 +425,6 @@
 	});
 
 	afterNavigate(async () => {
-		finishIntro();
 		clearPreview();
 		editor.visual = null;
 		want = 0;
@@ -497,12 +434,11 @@
 			scroller.scrollTop = 0;
 			setPos({ line: 0, col: 0 });
 			replayReveal();
-			startIntro();
 		});
 	});
 </script>
 
-<svelte:window onpointerup={endDrag} onpointercancel={endDrag} onpointerdown={finishIntro} onwheel={finishIntro} />
+<svelte:window onpointerup={endDrag} onpointercancel={endDrag} />
 
 <!-- tabindex: lets keyboard users focus the scroll area so arrows/PageDown work natively -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->

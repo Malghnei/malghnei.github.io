@@ -4,6 +4,21 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		%sveltekit.head%
+		<!-- First visit to home: keep the start screen hidden until the name starts decoding, so the
+		     prerendered page doesn't flash complete first. Banner clears the class; the timeout is
+		     a safety net if the app never starts. Keep the key in sync with INTRO_PLAYED_KEY. -->
+		<script>
+			try {
+				if (
+					location.pathname === '/' &&
+					sessionStorage.getItem('portfolio:introPlayed') !== '1' &&
+					!matchMedia('(prefers-reduced-motion: reduce)').matches
+				) {
+					document.documentElement.classList.add('intro');
+					setTimeout(() => document.documentElement.classList.remove('intro'), 3000);
+				}
+			} catch {}
+		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
