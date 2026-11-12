@@ -1,9 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { fileForPath } from '$lib/editor/files';
+	import { siteContent } from '$lib/data/site';
 	import { currentMode, editor, openTerminal } from '$lib/editor/state.svelte';
+	import { onMount } from 'svelte';
 
 	const mode = $derived(currentMode());
+
+	// Assembled in the browser, as on the home page, so the prerendered HTML never holds it.
+	let emailHref = $state<string>();
+	onMount(() => {
+		emailHref = `mailto:${siteContent.links.contactEmail.replace(/\s*\[@\]\s*/, '@')}`;
+	});
 </script>
 
 <footer class="statusbar">
@@ -14,7 +22,7 @@
 		class:visual={mode.startsWith('VISUAL')}
 		aria-live="polite">{mode}</span
 	>
-	<span class="seg">{fileForPath(page.url.pathname)}</span>
+	<span class="seg file">{fileForPath(page.url.pathname)}</span>
 	<!-- Always present, so screen readers announce it when the text arrives. -->
 	<span class="seg msg" class:empty={!editor.message} role="status">{editor.message ?? ''}</span>
 	{#if editor.terminal.status === 'minimized'}
@@ -33,6 +41,11 @@
 	<span class="seg right hide-sm">utf-8</span>
 	<span class="seg right hide-sm">md</span>
 	<span class="seg right pos">{editor.cursorLine}:{editor.cursorCol}</span>
+	<!-- Touch has no cursor, so the position's place goes to the contact links. -->
+	<a class="seg right contact" href={emailHref}>email</a>
+	{#each siteContent.links.items as link (link.href)}
+		<a class="seg right contact" href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+	{/each}
 </footer>
 
 <style>
@@ -94,6 +107,35 @@
 
 	.pos {
 		color: var(--nord-6);
+	}
+
+	.statusbar .contact {
+		display: none;
+		color: var(--nord-8);
+	}
+
+	/* On touch the contact links must fit; a long file name gives way instead. */
+	@media (hover: none) {
+		.statusbar .pos,
+		.statusbar .help {
+			display: none;
+		}
+
+		.statusbar .file {
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.statusbar .seg:not(.file),
+		.statusbar .mode {
+			flex-shrink: 0;
+		}
+
+		.statusbar .contact {
+			display: flex;
+			align-items: center;
+		}
 	}
 
 	@media (max-width: 639px) {
