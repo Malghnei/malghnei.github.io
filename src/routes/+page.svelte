@@ -23,7 +23,7 @@
 	<p class="role">{siteContent.role}</p>
 	<p class="status"><span aria-hidden="true">●</span> {siteContent.status.toLowerCase()}</p>
 	<Blank />
-	<a class="line menu-row" href="/projects/">
+	<a class="line menu-row" href="/projects/" data-cursor-start>
 		<span class="key">p</span><span class="label">projects</span><span class="leader" aria-hidden="true"></span><span class="note">{data.projectCount} files</span>
 	</a>
 	<a class="line menu-row" href="/about/">
@@ -116,10 +116,11 @@
 		color: var(--nord-9);
 	}
 
+	/* Inline, not flex: flex drops the spaces between the links from the cursor's text, so w/b
+	   would leave the row instead of stepping from link to link. */
 	.contact {
-		display: flex;
-		gap: 3ch;
 		padding-left: 3ch;
+		word-spacing: 2ch;
 	}
 
 	.feat {

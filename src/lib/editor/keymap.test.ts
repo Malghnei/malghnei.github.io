@@ -156,3 +156,26 @@ describe('resolveTimeout', () => {
 		expect(resolveTimeout('3g')).toBeNull();
 	});
 });
+
+describe('resolveKey: home shortcuts', () => {
+	it('opens projects, about and the terminal with p, a, t on home', () => {
+		expect(resolveKey('', key('p', { home: true }))).toEqual(action({ type: 'goto', path: '/projects/' }));
+		expect(resolveKey('', key('a', { home: true }))).toEqual(action({ type: 'goto', path: '/about/' }));
+		expect(resolveKey('', key('t', { home: true }))).toEqual(action({ type: 'toggleTerminal' }));
+	});
+	it('drops a pending count before a home shortcut', () => {
+		expect(resolveKey('3', key('p', { home: true }))).toEqual(action({ type: 'goto', path: '/projects/' }));
+	});
+	it('leaves p, a, t alone elsewhere', () => {
+		for (const k of ['p', 'a', 't']) expect(resolveKey('', key(k))).toEqual(passthrough);
+	});
+	it('keeps motions and gg on home', () => {
+		expect(resolveKey('', key('e', { home: true }))).toEqual(motion('e'));
+		expect(resolveKey('', key('l', { home: true }))).toEqual(motion('l'));
+		expect(resolveKey('g', key('g', { home: true }))).toEqual(motion('gg'));
+	});
+	it('leaves the leader sequence as it was', () => {
+		expect(resolveKey(' ', key('p', { home: true }))).toEqual(action({ type: 'goto', path: '/projects/' }));
+		expect(resolveKey(' ', key('t', { home: true }))).toEqual(passthrough);
+	});
+});

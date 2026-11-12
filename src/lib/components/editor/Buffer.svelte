@@ -282,6 +282,22 @@
 		}
 	};
 
+	const OPENABLE = 'a[href], button';
+
+	// Enter where nothing is previewed: follow the link or button under the cursor, else the
+	// line's first one. A link without an href yet (the email, before it's assembled) is skipped.
+	export const openAtCursor = () => {
+		const line = lines[editor.cursorLine - 1];
+		const map = maps[editor.cursorLine - 1];
+		if (!line || !map) return;
+		const candidates = line.matches(OPENABLE)
+			? [line]
+			: Array.from(line.querySelectorAll<HTMLElement>(OPENABLE));
+		const col = editor.cursorCol - 1;
+		const under = rangeAt(map, col, col + 1);
+		(candidates.find((el) => under?.intersectsNode(el)) ?? candidates[0])?.click();
+	};
+
 	export const pageDown = () => {
 		scroller.scrollBy({ top: scroller.clientHeight * 0.9, behavior: scrollBehavior() });
 	};
@@ -432,7 +448,8 @@
 		requestAnimationFrame(() => {
 			collectLines();
 			scroller.scrollTop = 0;
-			setPos({ line: 0, col: 0 });
+			// A page can name the line the cursor starts on (home's projects row).
+			setPos({ line: Math.max(0, lines.findIndex((line) => line.hasAttribute('data-cursor-start'))), col: 0 });
 			replayReveal();
 		});
 	});

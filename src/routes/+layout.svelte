@@ -66,7 +66,8 @@
 				return;
 			case 'open': {
 				const target = editor.preview;
-				if (!target) return;
+				// Nothing previewed (always the case on home): open the link under the cursor.
+				if (!target) return buffer?.openAtCursor();
 				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
 				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
 				// Roles have no page to open.
@@ -92,7 +93,8 @@
 			metaKey: event.metaKey,
 			inEditable: isEditableTarget(event.target),
 			onBody: event.target === document.body || event.target === document.documentElement,
-			visual: editor.visual !== null
+			visual: editor.visual !== null,
+			home
 		});
 		pending = '';
 		clearTimeout(pendingTimer);
