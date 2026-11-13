@@ -120,7 +120,6 @@
 		font-size: min(calc(100cqw / (var(--cols) * 0.565)), var(--max));
 		line-height: 1.28;
 		white-space: pre;
-		user-select: none;
 	}
 
 	/* Each cell is a fixed box, not a glyph advance: small sizes round advances to whole pixels,

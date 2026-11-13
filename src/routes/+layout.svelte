@@ -66,8 +66,8 @@
 				return;
 			case 'open': {
 				const target = editor.preview;
-				// Nothing previewed (always the case on home): open the link under the cursor.
-				if (!target) return buffer?.openAtCursor();
+				// Home previews nothing, so Enter opens the link under the cursor; elsewhere it stays a no-op.
+				if (!target) return home ? buffer?.openAtCursor() : undefined;
 				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
 				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
 				// Roles have no page to open.
