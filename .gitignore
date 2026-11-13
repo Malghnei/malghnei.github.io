@@ -27,3 +27,7 @@ docs/
 .superpowers/
 .claude/
 .serena/
+
+# Local tool output
+graphify-out/
+.impeccable/

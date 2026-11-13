@@ -52,6 +52,10 @@
 	--hoverline-bg: #323844;
 	/* nvim Nord's Visual colour. */
 	--visual-bg: var(--nord-2);
+	/* Text that informs ("-- 4 roles"): 5.2:1 on nord-0, 4.7:1 on the cursorline. */
+	--comment: color-mix(in srgb, var(--nord-3) 40%, var(--nord-4));
+	/* Syntax markers (#, -, [ ]): decorative but readable, about 3.4:1. */
+	--marker: color-mix(in srgb, var(--nord-3) 65%, var(--nord-4));
 }
 
 @media (max-width: 639px) {
@@ -221,11 +225,24 @@ html.intro .dash {
 	user-select: none;
 }
 
-/* Markdown look */
-.buffer-content h1::before { content: '# '; color: var(--nord-3); }
-.buffer-content h2::before { content: '## '; color: var(--nord-3); }
-.buffer-content h3::before { content: '### '; color: var(--nord-3); }
-.buffer-content h4::before { content: '#### '; color: var(--nord-3); }
+/* Markdown look, rendered the way render-markdown.nvim does it: one font size, so level shows
+   through fill and rules. h1 sits on a tinted band, h2 on a rule out to the text edge.
+   The cursorline's own fill still wins on the row it's on. The home dashboard opts out. */
+.buffer-content h1::before { content: '# '; color: var(--marker); }
+.buffer-content h2::before { content: '## '; color: var(--marker); }
+.buffer-content h3::before { content: '### '; color: var(--marker); }
+.buffer-content h4::before { content: '#### '; color: var(--marker); }
+
+.buffer-content h1:not(.dash *) {
+	background-color: rgb(136 192 208 / 0.12);
+}
+
+.buffer-content h2:not(.dash *) {
+	background-image: linear-gradient(var(--nord-3), var(--nord-3));
+	background-position: 0 100%;
+	background-size: 100% 1px;
+	background-repeat: no-repeat;
+}
 
 .buffer-content ul {
 	list-style: none;
@@ -235,7 +252,7 @@ html.intro .dash {
 
 .buffer-content ul > li::before {
 	content: '- ';
-	color: var(--nord-3);
+	color: var(--marker);
 }
 
 .buffer-content ol {

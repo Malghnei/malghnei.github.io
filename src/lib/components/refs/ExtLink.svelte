@@ -17,7 +17,7 @@
 
 <style>
 	.dim {
-		color: var(--nord-3);
+		color: var(--marker);
 		user-select: none;
 	}
 </style>
