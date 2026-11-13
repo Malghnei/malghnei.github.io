@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CATEGORY_COLOR, experienceId, formatPeriod } from './experience';
+import { CATEGORY_COLOR, experienceId, formatPeriod, logPeriod } from './experience';
 import { experienceTimeline } from './site';
 import type { ExperienceEntry } from '$lib/types';
 
@@ -37,6 +37,22 @@ describe('formatPeriod', () => {
 	it('lowercases and turns the dash into an arrow', () => {
 		expect(formatPeriod('Sept. 2025 - May 2026')).toBe('sept. 2025 → may 2026');
 		expect(formatPeriod('Sept. 2025 - Present')).toBe('sept. 2025 → present');
+	});
+});
+
+describe('logPeriod', () => {
+	it('gives fixed-width year-month ranges', () => {
+		expect(logPeriod('Sept. 2025 - May 2026')).toBe('2025-09 → 2026-05');
+		expect(logPeriod('Jun. 2024 - Aug. 2024')).toBe('2024-06 → 2024-08');
+		expect(logPeriod('Oct. 2023 - Present')).toBe('2023-10 → now');
+	});
+
+	it('falls back to formatPeriod on dates it cannot read', () => {
+		expect(logPeriod('Summer 2024 - Fall 2024')).toBe('summer 2024 → fall 2024');
+	});
+
+	it('parses every period in the real timeline', () => {
+		for (const item of experienceTimeline) expect(logPeriod(item.period)).toMatch(/^\d{4}-\d{2} → (\d{4}-\d{2}|now)$/);
 	});
 });
 
