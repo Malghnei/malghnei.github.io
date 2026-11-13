@@ -9,6 +9,7 @@
 	import StatusBar from '$lib/components/editor/StatusBar.svelte';
 	import TerminalWindow from '$lib/components/terminal/TerminalWindow.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import WhichKey from '$lib/components/editor/WhichKey.svelte';
 	import {
 		isEditableTarget,
@@ -23,6 +24,9 @@
 	import { buildDictionary } from '$lib/refs/tokenize';
 
 	let { children, data } = $props();
+
+	// Home is a start screen with no preview pane.
+	const home = $derived(page.url.pathname === '/');
 
 	// A getter, so readers always see the dictionary for the current data.
 	const dict = $derived(buildDictionary(data.projects));
@@ -62,7 +66,8 @@
 				return;
 			case 'open': {
 				const target = editor.preview;
-				if (!target) return;
+				// Home previews nothing, so Enter opens the link under the cursor; elsewhere it stays a no-op.
+				if (!target) return home ? buffer?.openAtCursor() : undefined;
 				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
 				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
 				// Roles have no page to open.
@@ -77,8 +82,6 @@
 
 	const onkeydown = (event: KeyboardEvent) => {
 		if (event.defaultPrevented) return;
-		// Any key ends the startup intro, then goes on to do its normal job.
-		buffer?.finishIntro();
 		// Space or Enter on a focused button or link keeps its native meaning.
 		if ((event.key === ' ' || event.key === 'Enter') && event.target instanceof Element && event.target.closest('button, a, summary')) return;
 		editor.message = null;
@@ -90,7 +93,8 @@
 			metaKey: event.metaKey,
 			inEditable: isEditableTarget(event.target),
 			onBody: event.target === document.body || event.target === document.documentElement,
-			visual: editor.visual !== null
+			visual: editor.visual !== null,
+			home
 		});
 		pending = '';
 		clearTimeout(pendingTimer);
@@ -123,12 +127,14 @@
 <div class="app">
 	<Navbar />
 	<div class="workspace">
-		<div class="main">
+		<div class="main" class:home>
 			<Buffer bind:this={buffer}>
 				{@render children()}
 			</Buffer>
 		</div>
-		<PreviewPane projects={data.projects} links={siteContent.links.items} />
+		{#if !home}
+			<PreviewPane projects={data.projects} links={siteContent.links.items} />
+		{/if}
 		<TerminalWindow projects={data.projects} />
 		<WhichKey />
 	</div>
@@ -160,7 +166,11 @@
 		flex-direction: column;
 	}
 
-	/* The preview pane is hidden here, so the buffer takes the whole width as before. */
+	/* No preview pane here, so the buffer takes the whole width. */
+	.main.home {
+		flex: 1;
+	}
+
 	@media (max-width: 1279px), (hover: none) {
 		.main {
 			flex: 1;

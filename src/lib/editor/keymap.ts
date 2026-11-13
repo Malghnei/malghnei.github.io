@@ -25,6 +25,8 @@ export type KeyInput = {
 	onBody?: boolean;
 	/** A visual selection is active. */
 	visual?: boolean;
+	/** On the home start screen, whose menu letters are single-key shortcuts. */
+	home?: boolean;
 };
 
 export type KeyResult =
@@ -36,6 +38,12 @@ export const SEQUENCE_TIMEOUT_MS = 800;
 
 const LEADER = ' ';
 const LEADER_PAGES: Record<string, NavPath> = { h: '/', a: '/about/', p: '/projects/' };
+// Home's menu letters. None is a motion or an operator, so they mean nothing elsewhere.
+const HOME_KEYS: Record<string, KeyAction> = {
+	p: { type: 'goto', path: '/projects/' },
+	a: { type: 'goto', path: '/about/' },
+	t: { type: 'toggleTerminal' }
+};
 const MOTION_KEYS = new Set<string>(['h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'G']);
 const MODIFIER_KEYS = new Set<string>(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'AltGraph']);
 
@@ -75,6 +83,8 @@ export const resolveKey = (pending: string, input: KeyInput): KeyResult => {
 	const [, digits = '', g = ''] = /^(\d*)(g?)$/.exec(pending) ?? [];
 	const count = digits ? Number(digits) : null;
 	if (g) return input.key === 'g' ? motion('gg', count) : passthrough;
+	// A pending count is dropped, as for any other key that doesn't take one.
+	if (input.home && Object.hasOwn(HOME_KEYS, input.key)) return action(HOME_KEYS[input.key]);
 	if (/^[1-9]$/.test(input.key) || (input.key === '0' && digits)) {
 		return { kind: 'pending', pending: digits + input.key };
 	}

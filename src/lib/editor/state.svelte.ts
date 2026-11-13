@@ -10,8 +10,6 @@ export const editor = $state({
 	visual: null as { mode: VisualMode; anchor: Pos } | null,
 	// One-shot status bar text, e.g. "3 lines yanked"; cleared on the next key.
 	message: null as string | null,
-	// The startup intro is typing the banner in.
-	inserting: false,
 	helpOpen: false,
 	preview: null as PreviewTarget | null,
 	terminal: { status: 'closed' as TerminalStatus, maximized: false }
@@ -19,7 +17,6 @@ export const editor = $state({
 
 export const currentMode = () => {
 	if (editor.terminal.status === 'open') return 'TERMINAL';
-	if (editor.inserting) return 'INSERT';
 	if (editor.visual) return editor.visual.mode === 'line' ? 'VISUAL LINE' : 'VISUAL';
 	return 'NORMAL';
 };

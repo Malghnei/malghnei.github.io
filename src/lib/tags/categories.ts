@@ -5,6 +5,8 @@ export const TAG_CATEGORIES: Record<string, TagCategory> = {
 	Python: 'language',
 	Dart: 'language',
 	Java: 'language',
+	'C++': 'language',
+	Qt: 'framework',
 	React: 'framework',
 	'React Native': 'framework',
 	SvelteKit: 'framework',

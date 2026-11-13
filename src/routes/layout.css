@@ -141,6 +141,31 @@ a:hover {
 	pointer-events: none;
 }
 
+/* Home is a start screen: no gutter, no line numbers, the column centred both ways. */
+.buffer-content:has(.dash) {
+	--gutter: 0ch;
+	flex: 1 0 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	max-width: none;
+	padding: 1lh 16px;
+}
+
+.buffer-content .dash :is(h1, h2, h3, h4, h5, h6, p, li, hr, pre, blockquote, .line)::after {
+	content: none;
+}
+
+.buffer:has(.dash) .buffer-tildes {
+	display: none;
+}
+
+/* Set in app.html on a first visit; Banner clears it once the decode has started. */
+html.intro .dash {
+	visibility: hidden;
+}
+
 /* Before .cursorline so the cursor wins on a row that has both. */
 .buffer-content .hoverline {
 	background-color: var(--hoverline-bg);
@@ -172,32 +197,6 @@ a:hover {
 	background-color: rgb(136 192 208 / 0.35);
 }
 
-/* Art rows use a bigger font whose line box fills the row; their cursor cell is drawn behind
-   the glyph in art-font units so it is one art char wide and the full row tall. */
-.buffer-content .banner-art .art {
-	position: relative;
-	z-index: 0;
-}
-
-.buffer-content .banner-art.cursor-art .art::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: calc(var(--cursor-col, 0) * 1ch);
-	width: 1ch;
-	z-index: -1;
-	background: var(--nord-4);
-}
-
-::highlight(cursor-glyph) {
-	color: var(--nord-0);
-}
-
-/* Banner text the startup intro hasn't typed yet. */
-::highlight(unrevealed) {
-	color: transparent;
-}
 
 /* A line with no text (hr, blank) can't hold a highlight, so its cursor cell is drawn here. */
 .buffer-content .cursor-cell::before {

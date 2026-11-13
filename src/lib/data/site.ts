@@ -4,7 +4,6 @@ export const siteContent = {
 	name: 'Malik Alghneimin',
 	role: 'Software Developer · CS @ Western University',
 	status: 'Open to 2027 internships',
-	heroDescription: 'Building Kata, a martial arts training platform.',
 	aboutNarrative: [
 		"I'm Malik, a third-year Computer Science student at Western University. I'm most interested in cybersecurity, machine learning, and embedded systems.",
 		"Outside of class, I'm always keeping up to date on new technologies and building projects to solve issues and learn more. A project I am proud of building is Kata, a platform that helps people train martial arts on their own.",
