@@ -70,8 +70,11 @@
 				if (!target) return home ? buffer?.openAtCursor() : undefined;
 				if (target.kind === 'project') return goto(`/projects/${target.slug}/`);
 				if (target.kind === 'tech') return goto(`/projects/?tag=${encodeURIComponent(target.name)}`);
-				// Roles have no page to open.
-				if (target.kind === 'experience') return;
+				// Roles have no page to open; say so rather than doing nothing.
+				if (target.kind === 'experience') {
+					editor.message = 'roles have no page to open';
+					return;
+				}
 				// window.open on mailto: can leave a blank tab behind.
 				if (target.href.startsWith('mailto:')) location.href = target.href;
 				else window.open(target.href, '_blank', 'noreferrer');
